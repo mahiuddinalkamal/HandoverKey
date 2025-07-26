@@ -106,7 +106,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 4. Add tests
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -117,7 +117,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Issues: [GitHub Issues](https://github.com/mahiuddinalkamal/handoverkey/issues)
 - Docs: [Documentation](https://docs.handoverkey.com)
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 HandoverKey is designed for digital legacy planning and should not be used as a replacement for legal estate planning. Always consult with legal professionals for proper estate planning.
 
