@@ -1,0 +1,60 @@
+{
+  "name": "handoverkey",
+  "version": "0.1.0",
+  "description": "A stupidly secure, open-source digital legacy platform with dead man's switch functionality",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "type-check": "turbo run type-check",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "db:migrate": "cd packages/database && npm run migrate",
+    "db:seed": "cd packages/database && npm run seed",
+    "security:audit": "npm audit && npm run security:check",
+    "security:check": "snyk test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/handoverkey/handoverkey.git"
+  },
+  "keywords": [
+    "digital-legacy",
+    "dead-man-switch",
+    "encryption",
+    "security",
+    "zero-knowledge",
+    "open-source"
+  ],
+  "author": "HandoverKey Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/handoverkey/handoverkey/issues"
+  },
+  "homepage": "https://handoverkey.com"
+} 
