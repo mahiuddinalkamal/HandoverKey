@@ -52,7 +52,7 @@ jobs:
             
             // Check for required sections
             const requiredSections = ['## Changes', '## Testing'];
-            const missingsections = requiredSections.filter(section => 
+            const missingSections = requiredSections.filter(section => 
               !pr.body.includes(section)
             );
             
