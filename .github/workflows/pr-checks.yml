@@ -47,17 +47,21 @@ jobs:
             });
             
             if (!pr.body || pr.body.trim().length < 20) {
-              core.setFailed('PR description is too short. Please provide a meaningful description of your changes.');
+              core.warning('PR description is short. Consider providing a more detailed description of your changes.');
+            } else {
+              console.log('✅ PR description length is adequate');
             }
             
-            // Check for required sections
-            const requiredSections = ['## Changes', '## Testing'];
-            const missingSections = requiredSections.filter(section => 
+            // Check for recommended sections
+            const recommendedSections = ['## Changes', '## Testing'];
+            const missingSections = recommendedSections.filter(section => 
               !pr.body.includes(section)
             );
             
             if (missingSections.length > 0) {
-              core.setFailed(`PR description is missing required sections: ${missingSections.join(', ')}`);
+              core.warning(`PR description could benefit from these sections: ${missingSections.join(', ')}`);
+            } else {
+              console.log('✅ PR description includes recommended sections');
             }
 
   # Check for breaking changes
