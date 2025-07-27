@@ -1,0 +1,173 @@
+name: 🔒 Security Report
+description: Report a security vulnerability (use private reporting for sensitive issues)
+title: "[Security]: "
+labels: ["security", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **IMPORTANT**: If this is a sensitive security vulnerability that could be exploited, please use GitHub's private vulnerability reporting feature instead of creating a public issue.
+        
+        Go to the Security tab → Report a vulnerability to report privately.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Security Reporting Guidelines
+      description: Please confirm you understand our security reporting process
+      options:
+        - label: I understand that sensitive vulnerabilities should be reported privately
+          required: true
+        - label: This is not a sensitive vulnerability that could be immediately exploited
+          required: true
+        - label: I have not disclosed this vulnerability publicly elsewhere
+          required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Vulnerability Type
+      description: What type of security issue is this?
+      options:
+        - Authentication/Authorization
+        - Encryption/Cryptography
+        - Input Validation
+        - SQL Injection
+        - Cross-Site Scripting (XSS)
+        - Cross-Site Request Forgery (CSRF)
+        - Insecure Direct Object Reference
+        - Security Misconfiguration
+        - Sensitive Data Exposure
+        - Insufficient Logging/Monitoring
+        - Dependency Vulnerability
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity Assessment
+      description: How severe do you consider this vulnerability?
+      options:
+        - Critical (Remote code execution, data breach, complete system compromise)
+        - High (Privilege escalation, significant data exposure)
+        - Medium (Limited data exposure, denial of service)
+        - Low (Information disclosure, minor security weakness)
+        - Informational (Security best practice, no immediate risk)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Vulnerability Description
+      description: Describe the security vulnerability in detail
+      placeholder: Provide a clear description of the vulnerability...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Potential Impact
+      description: What could an attacker achieve by exploiting this vulnerability?
+      placeholder: |
+        - Data that could be accessed
+        - Systems that could be compromised
+        - Users that could be affected
+        - Business impact
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the vulnerability
+      placeholder: |
+        1. Step one...
+        2. Step two...
+        3. Observe the vulnerability...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proof-of-concept
+    attributes:
+      label: Proof of Concept
+      description: Provide a proof of concept (sanitize any sensitive information)
+      placeholder: Include code, screenshots, or other evidence (remove sensitive data)
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which component is affected by this vulnerability?
+      options:
+        - Web Application
+        - Mobile Application
+        - CLI Tool
+        - API Server
+        - Database
+        - Encryption/Crypto
+        - Authentication System
+        - Vault Management
+        - Successor Management
+        - Infrastructure/Deployment
+        - Dependencies
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Information about the environment where this was discovered
+      placeholder: |
+        - HandoverKey version:
+        - Deployment type: (local/staging/production)
+        - Browser/Client:
+        - Operating System:
+    validations:
+      required: true
+
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Suggested Mitigation
+      description: Do you have suggestions for how to fix this vulnerability?
+      placeholder: Describe potential fixes or mitigations...
+
+  - type: checkboxes
+    id: disclosure
+    attributes:
+      label: Responsible Disclosure
+      description: Disclosure timeline preferences
+      options:
+        - label: I am willing to work with the team on responsible disclosure
+        - label: I would like to be credited in the security advisory (if applicable)
+        - label: I understand this may take time to properly fix and test
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any other relevant information about this vulnerability
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        **What happens next?**
+        
+        1. Our security team will review this report within 48 hours
+        2. We'll acknowledge receipt and provide an initial assessment
+        3. We'll work on a fix and coordinate disclosure timing with you
+        4. Once fixed, we'll publish a security advisory (if warranted)
+        
+        Thank you for helping keep HandoverKey secure! 🔒
