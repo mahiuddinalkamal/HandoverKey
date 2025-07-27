@@ -103,7 +103,10 @@ jobs:
     needs: [build]
     strategy:
       matrix:
-        package: [core, shared, api]
+        package: [core, shared, api, database]
+        include:
+          - package: web
+            workspace: apps/web
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -123,12 +126,18 @@ jobs:
           name: build-artifacts
 
       - name: Run unit tests for ${{ matrix.package }}
-        run: npm run test --workspace=packages/${{ matrix.package }}
+        run: |
+          if [ "${{ matrix.workspace }}" != "" ]; then
+            npm run test:coverage --workspace=${{ matrix.workspace }}
+          else
+            npm run test:coverage --workspace=packages/${{ matrix.package }}
+          fi
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          file: packages/${{ matrix.package }}/coverage/lcov.info
+          file: |
+            ${{ matrix.workspace && format('{0}/coverage/lcov.info', matrix.workspace) || format('packages/{0}/coverage/lcov.info', matrix.package) }}
           flags: ${{ matrix.package }}
 
   # Integration tests with database
