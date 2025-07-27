@@ -6,7 +6,7 @@
 [![Security: Verified](https://img.shields.io/badge/Security-Verified-green.svg)](https://github.com/handoverkey/security)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/handoverkey/actions)
 
-## 🎯 What is HandoverKey?
+## What is HandoverKey?
 
 HandoverKey is a zero-knowledge, end-to-end encrypted digital legacy platform that ensures your digital assets are securely passed to your trusted contacts if something happens to you. Think of it as a "dead man's switch" for your digital life.
 
@@ -20,7 +20,7 @@ HandoverKey is a zero-knowledge, end-to-end encrypted digital legacy platform th
 - **Audit Trail**: Complete transparency of all access attempts and system events
 - **Open Source**: Full transparency - inspect, verify, and contribute
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -50,7 +50,7 @@ chmod +x scripts/stop-all.sh
 
 Visit `http://localhost:3000` to access the web application.
 
-## 📋 Project Structure
+## Project Structure
 
 ```
 handoverkey/
@@ -68,7 +68,7 @@ handoverkey/
 └── tests/                   # End-to-end tests
 ```
 
-## 🔐 Security Architecture
+## Security Architecture
 
 ### Encryption Model
 
@@ -86,7 +86,7 @@ handoverkey/
 - Regular security audits
 - Open source for transparency
 
-## 📖 Documentation
+## Documentation
 
 - [Architecture Guide](docs/architecture.md)
 - [Security Model](docs/security.md)
@@ -94,7 +94,7 @@ handoverkey/
 - [Deployment Guide](docs/deployment.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
@@ -106,18 +106,18 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 4. Add tests
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## Support
 
 - Email: support@handoverkey.com
 - Discord: [Join our community](https://discord.gg/handoverkey)
-- Issues: [GitHub Issues](https://github.com/handoverkey/issues)
+- Issues: [GitHub Issues](https://github.com/mahiuddinalkamal/handoverkey/issues)
 - Docs: [Documentation](https://docs.handoverkey.com)
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 HandoverKey is designed for digital legacy planning and should not be used as a replacement for legal estate planning. Always consult with legal professionals for proper estate planning.
 
