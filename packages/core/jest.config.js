@@ -15,6 +15,10 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
-    '^@handoverkey/shared$': '<rootDir>/../shared/src',
+    '^@handoverkey/shared$': '<rootDir>/../shared/src/index.ts',
   },
+  moduleDirectories: ['node_modules', '<rootDir>/../shared/src'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@handoverkey)/)',
+  ],
 }; 

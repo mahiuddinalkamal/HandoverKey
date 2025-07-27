@@ -17,7 +17,7 @@ describe('VaultManager', () => {
   describe('createEntry', () => {
     it('should create a vault entry with encrypted data', async () => {
       const entry = await VaultManager.createEntry(userId, testData, testKey, testCategory, testTags);
-      
+
       expect(entry.id).toBeDefined();
       expect(entry.userId).toBe(userId);
       expect(entry.category).toBe(testCategory);
@@ -32,7 +32,7 @@ describe('VaultManager', () => {
 
     it('should create entry without category and tags', async () => {
       const entry = await VaultManager.createEntry(userId, testData, testKey);
-      
+
       expect(entry.category).toBeUndefined();
       expect(entry.tags).toBeUndefined();
     });
@@ -40,7 +40,7 @@ describe('VaultManager', () => {
     it('should handle Uint8Array data', async () => {
       const binaryData = new Uint8Array([1, 2, 3, 4, 5]);
       const entry = await VaultManager.createEntry(userId, binaryData, testKey);
-      
+
       expect(entry.encryptedData.data).toBeDefined();
     });
   });
@@ -51,16 +51,16 @@ describe('VaultManager', () => {
       const newData = 'Updated secret data';
       const newCategory = 'Documents';
       const newTags = ['legal', 'important'];
-      
+
       const updatedEntry = await VaultManager.updateEntry(originalEntry, newData, testKey, newCategory, newTags);
-      
+
       expect(updatedEntry.id).toBe(originalEntry.id);
       expect(updatedEntry.userId).toBe(originalEntry.userId);
       expect(updatedEntry.category).toBe(newCategory);
       expect(updatedEntry.tags).toEqual(newTags);
       expect(updatedEntry.version).toBe(originalEntry.version + 1);
       expect(updatedEntry.updatedAt.getTime()).toBeGreaterThanOrEqual(originalEntry.updatedAt.getTime());
-      
+
       // Verify the data was actually updated
       const decryptedData = await VaultManager.decryptEntry(updatedEntry, testKey);
       expect(decryptedData).toBe(newData);
@@ -69,9 +69,9 @@ describe('VaultManager', () => {
     it('should preserve existing category and tags if not provided', async () => {
       const originalEntry = await VaultManager.createEntry(userId, testData, testKey, testCategory, testTags);
       const newData = 'Updated secret data';
-      
+
       const updatedEntry = await VaultManager.updateEntry(originalEntry, newData, testKey);
-      
+
       expect(updatedEntry.category).toBe(testCategory);
       expect(updatedEntry.tags).toEqual(testTags);
     });
@@ -81,14 +81,14 @@ describe('VaultManager', () => {
     it('should decrypt entry data correctly', async () => {
       const entry = await VaultManager.createEntry(userId, testData, testKey);
       const decryptedData = await VaultManager.decryptEntry(entry, testKey);
-      
+
       expect(decryptedData).toBe(testData);
     });
 
     it('should fail with wrong key', async () => {
       const entry = await VaultManager.createEntry(userId, testData, testKey);
       const wrongMasterKey = await KeyDerivation.deriveMasterKey('wrongPassword');
-      
+
       await expect(VaultManager.decryptEntry(entry, wrongMasterKey.key))
         .rejects.toThrow();
     });
@@ -138,7 +138,7 @@ describe('VaultManager', () => {
     it('should export entry with decrypted data', async () => {
       const entry = await VaultManager.createEntry(userId, testData, testKey, testCategory, testTags);
       const exported = await VaultManager.exportEntry(entry, testKey);
-      
+
       expect(exported.id).toBe(entry.id);
       expect(exported.data).toBe(testData);
       expect(exported.category).toBe(testCategory);
@@ -156,13 +156,13 @@ describe('VaultManager', () => {
         category: testCategory,
         tags: testTags
       };
-      
+
       const entry = await VaultManager.importEntry(userId, importData, testKey);
-      
+
       expect(entry.userId).toBe(userId);
       expect(entry.category).toBe(testCategory);
       expect(entry.tags).toEqual(testTags);
-      
+
       const decryptedData = await VaultManager.decryptEntry(entry, testKey);
       expect(decryptedData).toBe(testData);
     });
@@ -217,7 +217,7 @@ describe('VaultManager', () => {
       it('should invalidate entry with missing required fields', () => {
         const invalidEntry = { ...entries[0] };
         delete (invalidEntry as any).id;
-        
+
         const isValid = VaultManager.validateEntry(invalidEntry);
         expect(isValid).toBe(false);
       });

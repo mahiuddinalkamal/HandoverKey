@@ -73,7 +73,7 @@ export class VaultManager {
         
         if (decryptedData.toLowerCase().includes(lowerQuery) ||
             entry.category?.toLowerCase().includes(lowerQuery) ||
-            entry.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) {
+            entry.tags?.some((tag: string) => tag.toLowerCase().includes(lowerQuery))) {
           results.push(entry);
         }
       } catch (error) {
@@ -139,7 +139,7 @@ export class VaultManager {
     tag: string
   ): VaultEntry[] {
     return entries.filter(entry => 
-      entry.tags?.some(t => t === tag)
+      entry.tags?.some((t: string) => t === tag)
     );
   }
 
@@ -156,7 +156,7 @@ export class VaultManager {
   static getTags(entries: VaultEntry[]): string[] {
     const tags = new Set<string>();
     entries.forEach(entry => {
-      entry.tags?.forEach(tag => tags.add(tag));
+      entry.tags?.forEach((tag: string) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }
