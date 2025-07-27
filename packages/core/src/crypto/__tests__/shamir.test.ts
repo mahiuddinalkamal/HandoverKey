@@ -1,6 +1,6 @@
 import { ShamirSecretSharing } from '../shamir';
 
-describe.skip('ShamirSecretSharing', () => {
+describe('ShamirSecretSharing', () => {
   const testSecret = 'This is a test secret that should be split and reconstructed';
 
   describe('splitSecret and reconstructSecret', () => {

@@ -2,8 +2,7 @@ import { ShamirShare } from '@handoverkey/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ShamirSecretSharing {
-  private static readonly PRIME = 2n ** 127n - 1n;
-  private static readonly FIELD_SIZE = 128;
+  private static readonly PRIME = 2n ** 31n - 1n; // Smaller prime for better handling
 
   static splitSecret(
     secret: string,
@@ -18,25 +17,45 @@ export class ShamirSecretSharing {
       throw new Error('Threshold must be at least 2');
     }
 
+    // Convert secret to bytes and then to numbers for processing
     const secretBytes = new TextEncoder().encode(secret);
-    const secretBigInt = this.bytesToBigInt(secretBytes);
-    
-    const coefficients = [secretBigInt];
-    
-    for (let i = 1; i < threshold; i++) {
-      coefficients.push(this.generateRandomCoefficient());
-    }
-
     const shares: ShamirShare[] = [];
     
-    for (let i = 1; i <= totalShares; i++) {
-      const x = BigInt(i);
-      const y = this.evaluatePolynomial(coefficients, x);
-      const shareId = uuidv4();
+    // Process each byte separately to avoid large number issues
+    const byteShares: number[][][] = [];
+    
+    for (let byteIndex = 0; byteIndex < secretBytes.length; byteIndex++) {
+      const secretByte = BigInt(secretBytes[byteIndex]);
+      const coefficients = [secretByte];
+      
+      // Generate random coefficients for this byte
+      for (let i = 1; i < threshold; i++) {
+        coefficients.push(this.generateRandomCoefficient());
+      }
+      
+      const currentByteShares: number[][] = [];
+      
+      // Generate shares for this byte
+      for (let shareIndex = 1; shareIndex <= totalShares; shareIndex++) {
+        const x = BigInt(shareIndex);
+        const y = this.evaluatePolynomial(coefficients, x);
+        currentByteShares.push([shareIndex, Number(y)]);
+      }
+      
+      byteShares.push(currentByteShares);
+    }
+    
+    // Combine all byte shares into final shares
+    for (let shareIndex = 0; shareIndex < totalShares; shareIndex++) {
+      const shareData: number[][] = [];
+      
+      for (let byteIndex = 0; byteIndex < secretBytes.length; byteIndex++) {
+        shareData.push(byteShares[byteIndex][shareIndex]);
+      }
       
       shares.push({
-        id: shareId,
-        share: this.bigIntToBase64(y),
+        id: uuidv4(),
+        share: JSON.stringify(shareData),
         threshold,
         totalShares
       });
@@ -55,22 +74,36 @@ export class ShamirSecretSharing {
       throw new Error(`Need at least ${threshold} shares for reconstruction`);
     }
 
-    const points: [bigint, bigint][] = shares.slice(0, threshold).map((share, index) => {
-      const x = BigInt(index + 1);
-      const y = this.base64ToBigInt(share.share);
-      return [x, y];
-    });
-
-    const secret = this.lagrangeInterpolation(points);
-    const secretBytes = this.bigIntToBytes(secret);
+    // Parse share data
+    const shareData: number[][][] = shares.slice(0, threshold).map(share => 
+      JSON.parse(share.share)
+    );
     
-    return new TextDecoder().decode(secretBytes);
+    // Determine the length of the original secret
+    const secretLength = shareData[0].length;
+    const reconstructedBytes: number[] = [];
+    
+    // Reconstruct each byte
+    for (let byteIndex = 0; byteIndex < secretLength; byteIndex++) {
+      const points: [bigint, bigint][] = [];
+      
+      for (let shareIndex = 0; shareIndex < threshold; shareIndex++) {
+        const [x, y] = shareData[shareIndex][byteIndex];
+        points.push([BigInt(x), BigInt(y)]);
+      }
+      
+      const reconstructedByte = this.lagrangeInterpolation(points);
+      reconstructedBytes.push(Number(reconstructedByte));
+    }
+    
+    // Convert back to string
+    const reconstructedUint8Array = new Uint8Array(reconstructedBytes);
+    return new TextDecoder().decode(reconstructedUint8Array);
   }
 
   private static generateRandomCoefficient(): bigint {
-    const randomBytes = crypto.getRandomValues(new Uint8Array(16));
-    const randomBigInt = this.bytesToBigInt(randomBytes);
-    return randomBigInt % this.PRIME;
+    const randomValue = crypto.getRandomValues(new Uint32Array(1))[0];
+    return BigInt(randomValue) % this.PRIME;
   }
 
   private static evaluatePolynomial(coefficients: bigint[], x: bigint): bigint {
@@ -86,7 +119,7 @@ export class ShamirSecretSharing {
   }
 
   private static lagrangeInterpolation(points: [bigint, bigint][]): bigint {
-    let secret = 0n;
+    let result = 0n;
 
     for (let i = 0; i < points.length; i++) {
       const [xi, yi] = points[i];
@@ -96,16 +129,22 @@ export class ShamirSecretSharing {
       for (let j = 0; j < points.length; j++) {
         if (i !== j) {
           const [xj] = points[j];
-          numerator = (numerator * (-xj)) % this.PRIME;
+          numerator = (numerator * (0n - xj)) % this.PRIME;
           denominator = (denominator * (xi - xj)) % this.PRIME;
         }
       }
 
-      const lagrangeCoefficient = (numerator * this.modInverse(denominator)) % this.PRIME;
-      secret = (secret + (yi * lagrangeCoefficient) % this.PRIME) % this.PRIME;
+      // Handle negative values
+      if (numerator < 0n) numerator = (numerator + this.PRIME) % this.PRIME;
+      if (denominator < 0n) denominator = (denominator + this.PRIME) % this.PRIME;
+
+      const denominatorInverse = this.modInverse(denominator);
+      const lagrangeCoeff = (numerator * denominatorInverse) % this.PRIME;
+      const term = (yi * lagrangeCoeff) % this.PRIME;
+      result = (result + term) % this.PRIME;
     }
 
-    return secret;
+    return result;
   }
 
   private static modInverse(a: bigint): bigint {
@@ -123,38 +162,5 @@ export class ShamirSecretSharing {
     return (oldS % this.PRIME + this.PRIME) % this.PRIME;
   }
 
-  private static bytesToBigInt(bytes: Uint8Array): bigint {
-    let result = 0n;
-    for (let i = 0; i < bytes.length; i++) {
-      result = (result << 8n) | BigInt(bytes[i]);
-    }
-    return result;
-  }
 
-  private static bigIntToBytes(bigInt: bigint): Uint8Array {
-    const bytes: number[] = [];
-    let temp = bigInt;
-    
-    while (temp > 0n) {
-      bytes.unshift(Number(temp & 0xFFn));
-      temp = temp >> 8n;
-    }
-    
-    return new Uint8Array(bytes);
-  }
-
-  private static bigIntToBase64(bigInt: bigint): string {
-    const bytes = this.bigIntToBytes(bigInt);
-    const binaryString = Array.from(bytes, byte => String.fromCharCode(byte)).join('');
-    return btoa(binaryString);
-  }
-
-  private static base64ToBigInt(base64: string): bigint {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return this.bytesToBigInt(bytes);
-  }
 } 
