@@ -33,8 +33,8 @@ HandoverKey is a zero-knowledge, end-to-end encrypted digital legacy platform th
 
 ```bash
 # Clone the repository
-git clone https://github.com/mahiuddinalkamal/handoverkey.git
-cd handoverkey
+git clone https://github.com/HandoverKey/HandoverKey.git
+cd HandoverKey
 
 # Install dependencies
 npm install
