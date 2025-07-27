@@ -10,6 +10,7 @@ import {
   sanitizeInput 
 } from './middleware/security';
 import authRoutes from './routes/auth-routes';
+import vaultRoutes from './routes/vault-routes';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/vault', vaultRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
