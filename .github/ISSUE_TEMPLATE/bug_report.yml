@@ -104,7 +104,7 @@ body:
       placeholder: |
         - OS: [e.g. macOS 13.0, Ubuntu 22.04, Windows 11]
         - Browser: [e.g. Chrome 118, Firefox 119, Safari 17]
-        - Node.js version: [e.g. 18.17.0]
+        - Node.js version: [e.g. 22.16.0]
         - HandoverKey version: [e.g. v1.0.0]
         - Docker version: [e.g. 24.0.0] (if applicable)
     validations:

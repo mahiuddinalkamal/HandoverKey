@@ -9,7 +9,7 @@ This guide provides instructions for deploying the HandoverKey application. It c
 ### 2.1 Prerequisites
 
 - Docker & Docker Compose
-- Node.js 18+
+- Node.js 22+
 - npm (Node Package Manager)
 - Git
 

@@ -1,24 +1,17 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
-  transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
+    '!src/**/__tests__/**',
   ],
-  coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
     '^@handoverkey/shared$': '<rootDir>/../shared/src/index.ts',
   },
-  moduleDirectories: ['node_modules', '<rootDir>/../shared/src'],
-  transformIgnorePatterns: [
-    'node_modules/(?!(@handoverkey)/)',
-  ],
-}; 
+  testPathIgnorePatterns: ['/dist/'],
+  coveragePathIgnorePatterns: ['/dist/', '/node_modules/'],
+};

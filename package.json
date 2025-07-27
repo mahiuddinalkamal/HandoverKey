@@ -25,8 +25,6 @@
     "test:integration": "turbo run test --filter=packages/api",
     "test:e2e": "echo 'E2E tests not yet implemented'",
     "test:performance": "echo 'Performance tests not yet implemented'",
-    "lint": "turbo run lint",
-    "type-check": "turbo run type-check",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
@@ -42,7 +40,7 @@
     "typescript": "^5.0.0"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22.0.0",
     "npm": ">=9.0.0"
   },
   "repository": {

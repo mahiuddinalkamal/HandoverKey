@@ -71,7 +71,7 @@ If you're looking to make your first contribution, look for issues labeled `good
 
 ### 3.1 Prerequisites
 
-*   Node.js (LTS version, currently 18+)
+*   Node.js (LTS version, currently 22+)
 *   npm (Node Package Manager)
 *   Docker and Docker Compose (for local database and Redis)
 *   Git

@@ -24,7 +24,7 @@ HandoverKey is a zero-knowledge, end-to-end encrypted digital legacy platform th
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 22+ 
 - Docker & Docker Compose
 - PostgreSQL 14+
 - Redis 6+
