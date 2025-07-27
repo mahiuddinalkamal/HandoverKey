@@ -133,7 +133,7 @@ export class VaultService {
     `;
     const result = await DatabaseConnection.query(query, [userId]);
 
-    return result.rows.map(row => row.category);
+    return result.rows.map((row: any) => row.category);
   }
 
   static async getUserTags(userId: string): Promise<string[]> {
@@ -145,7 +145,7 @@ export class VaultService {
     `;
     const result = await DatabaseConnection.query(query, [userId]);
 
-    return result.rows.map(row => row.tag);
+    return result.rows.map((row: any) => row.tag);
   }
 
   static async getEntryCount(userId: string): Promise<number> {

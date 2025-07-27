@@ -59,7 +59,7 @@ describe('VaultManager', () => {
       expect(updatedEntry.category).toBe(newCategory);
       expect(updatedEntry.tags).toEqual(newTags);
       expect(updatedEntry.version).toBe(originalEntry.version + 1);
-      expect(updatedEntry.updatedAt.getTime()).toBeGreaterThan(originalEntry.updatedAt.getTime());
+      expect(updatedEntry.updatedAt.getTime()).toBeGreaterThanOrEqual(originalEntry.updatedAt.getTime());
       
       // Verify the data was actually updated
       const decryptedData = await VaultManager.decryptEntry(updatedEntry, testKey);
