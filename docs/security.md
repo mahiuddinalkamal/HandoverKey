@@ -7,49 +7,55 @@ This document details the security model of HandoverKey, a zero-knowledge, end-t
 ## 2. Core Security Principles
 
 ### 2.1 Zero-Knowledge
+
 - **Definition**: The server never has access to plaintext user data. All sensitive information is encrypted client-side before being transmitted or stored.
 - **Implementation**:
-    - **Client-Side Encryption**: All user-provided data (passwords, documents, notes) is encrypted on the user's device using AES-256-GCM.
-    - **Key Derivation**: Master encryption keys are derived from the user's password using PBKDF2 with a high iteration count and a unique salt.
-    - **No Server-Side Decryption**: The server stores only encrypted blobs and cannot decrypt them.
+  - **Client-Side Encryption**: All user-provided data (passwords, documents, notes) is encrypted on the user's device using AES-256-GCM.
+  - **Key Derivation**: Master encryption keys are derived from the user's password using PBKDF2 with a high iteration count and a unique salt.
+  - **No Server-Side Decryption**: The server stores only encrypted blobs and cannot decrypt them.
 
 ### 2.2 End-to-End Encryption (E2EE)
+
 - **Definition**: Data is encrypted on the sender's device and can only be decrypted by the intended recipient's device.
 - **Implementation**:
-    - **User to Server**: Data is encrypted client-side before upload.
-    - **Server to Successor**: Encrypted data is transmitted to successors, who then decrypt it on their device using their derived key shares.
+  - **User to Server**: Data is encrypted client-side before upload.
+  - **Server to Successor**: Encrypted data is transmitted to successors, who then decrypt it on their device using their derived key shares.
 
 ### 2.3 Least Privilege
+
 - **Definition**: Every module, process, and user is granted only the minimum permissions necessary to perform its function.
 - **Implementation**:
-    - **Microservices**: Each service (Auth, Vault, Handover) has distinct, limited access to resources.
-    - **Database Access**: Services connect to the database with specific, restricted user roles.
-    - **API Keys**: Limited scope API keys for third-party integrations.
+  - **Microservices**: Each service (Auth, Vault, Handover) has distinct, limited access to resources.
+  - **Database Access**: Services connect to the database with specific, restricted user roles.
+  - **API Keys**: Limited scope API keys for third-party integrations.
 
 ### 2.4 Defense in Depth
+
 - **Definition**: Multiple layers of security controls are placed throughout the system to provide redundancy in case one control fails.
 - **Implementation**:
-    - **Network**: Firewalls, WAF, DDoS protection.
-    - **Application**: Input validation, secure coding practices, rate limiting.
-    - **Data**: Client-side encryption, database encryption at rest, regular backups.
-    - **Operational**: Access controls, audit logging, security monitoring.
+  - **Network**: Firewalls, WAF, DDoS protection.
+  - **Application**: Input validation, secure coding practices, rate limiting.
+  - **Data**: Client-side encryption, database encryption at rest, regular backups.
+  - **Operational**: Access controls, audit logging, security monitoring.
 
 ## 3. Encryption Architecture
 
 ### 3.1 Key Management
 
 #### 3.1.1 Master Key Derivation
+
 - **Process**:
-    1. User enters password.
-    2. A unique, cryptographically secure salt is generated client-side for each user.
-    3. PBKDF2 (Password-Based Key Derivation Function 2) is used to derive a master encryption key from the password and salt.
-    - **Parameters**:
-        - **Algorithm**: SHA-256
-        - **Iterations**: 100,000+ (configurable, subject to performance testing)
-        - **Key Length**: 256 bits (for AES-256-GCM)
+  1. User enters password.
+  2. A unique, cryptographically secure salt is generated client-side for each user.
+  3. PBKDF2 (Password-Based Key Derivation Function 2) is used to derive a master encryption key from the password and salt.
+  - **Parameters**:
+    - **Algorithm**: SHA-256
+    - **Iterations**: 100,000+ (configurable, subject to performance testing)
+    - **Key Length**: 256 bits (for AES-256-GCM)
 - **Storage**: The derived master key is never stored. It is re-derived on each login. The salt is stored securely on the server alongside the user's encrypted data, as it is non-sensitive.
 
 #### 3.1.2 Data Encryption Keys (DEKs)
+
 - **Process**: For each piece of data (e.g., a password entry, a document), a unique Data Encryption Key (DEK) is generated.
 - **Encryption**: The DEK is then encrypted using the user's master key.
 - **Storage**: The encrypted DEK is stored alongside the encrypted data. This allows for efficient re-encryption if the master key changes (e.g., password change) without re-encrypting all data.
@@ -65,9 +71,9 @@ This document details the security model of HandoverKey, a zero-knowledge, end-t
 
 - **Purpose**: To enable multi-party handover without any single successor having full control or knowledge of the master key.
 - **Process**:
-    1. The user's master key (or a key derived from it specifically for handover) is split into `N` shares.
-    2. A threshold `K` is set, meaning any `K` out of `N` shares are required to reconstruct the original key.
-    3. Each successor receives one share.
+  1. The user's master key (or a key derived from it specifically for handover) is split into `N` shares.
+  2. A threshold `K` is set, meaning any `K` out of `N` shares are required to reconstruct the original key.
+  3. Each successor receives one share.
 - **Implementation**: A robust, audited SSS library will be used. The shares themselves are encrypted with the successor's public key (if available) or a temporary key exchanged securely.
 
 ## 4. Authentication and Access Control
@@ -76,11 +82,11 @@ This document details the security model of HandoverKey, a zero-knowledge, end-t
 
 - **Password Hashing**: User passwords are never stored in plaintext. Instead, they are hashed using a strong, slow hashing algorithm (e.g., Argon2, bcrypt) with a unique salt for each user.
 - **Multi-Factor Authentication (MFA)**:
-    - **TOTP (Time-based One-Time Password)**: Users can enable TOTP using authenticator apps.
-    - **WebAuthn (FIDO2)**: Support for hardware security keys (e.g., YubiKey, Ledger) for strong, phishing-resistant authentication.
+  - **TOTP (Time-based One-Time Password)**: Users can enable TOTP using authenticator apps.
+  - **WebAuthn (FIDO2)**: Support for hardware security keys (e.g., YubiKey, Ledger) for strong, phishing-resistant authentication.
 - **Session Management**:
-    - **JWT (JSON Web Tokens)**: Used for stateless authentication. Tokens are short-lived and refreshed securely.
-    - **Refresh Tokens**: Long-lived refresh tokens are stored securely (e.g., HTTP-only cookies) and used to obtain new access tokens.
+  - **JWT (JSON Web Tokens)**: Used for stateless authentication. Tokens are short-lived and refreshed securely.
+  - **Refresh Tokens**: Long-lived refresh tokens are stored securely (e.g., HTTP-only cookies) and used to obtain new access tokens.
 - **Rate Limiting**: Implemented at the API Gateway and individual service levels to prevent brute-force attacks and DDoS.
 
 ### 4.2 Authorization

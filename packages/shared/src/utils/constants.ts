@@ -1,28 +1,28 @@
 export const API_ENDPOINTS = {
   AUTH: {
-    REGISTER: '/api/v1/auth/register',
-    LOGIN: '/api/v1/auth/login',
-    LOGOUT: '/api/v1/auth/logout',
-    REFRESH: '/api/v1/auth/refresh',
-    PROFILE: '/api/v1/auth/profile',
+    REGISTER: "/api/v1/auth/register",
+    LOGIN: "/api/v1/auth/login",
+    LOGOUT: "/api/v1/auth/logout",
+    REFRESH: "/api/v1/auth/refresh",
+    PROFILE: "/api/v1/auth/profile",
   },
   VAULT: {
-    ENTRIES: '/api/v1/vault/entries',
-    SEARCH: '/api/v1/vault/search',
+    ENTRIES: "/api/v1/vault/entries",
+    SEARCH: "/api/v1/vault/search",
   },
   USERS: {
-    PROFILE: '/api/v1/users/profile',
-    SUCCESSORS: '/api/v1/users/successors',
+    PROFILE: "/api/v1/users/profile",
+    SUCCESSORS: "/api/v1/users/successors",
   },
   HANDOVER: {
-    STATUS: '/api/v1/handover/status',
-    CHECK_IN: '/api/v1/handover/check-in',
-    AUDIT_LOGS: '/api/v1/handover/audit-logs',
+    STATUS: "/api/v1/handover/status",
+    CHECK_IN: "/api/v1/handover/check-in",
+    AUDIT_LOGS: "/api/v1/handover/audit-logs",
   },
 } as const;
 
 export const ENCRYPTION_CONSTANTS = {
-  ALGORITHM: 'AES-GCM',
+  ALGORITHM: "AES-GCM",
   KEY_LENGTH: 256,
   IV_LENGTH: 12,
   TAG_LENGTH: 128,
@@ -59,24 +59,25 @@ export const DEFAULT_VALUES = {
 
 export const ERROR_MESSAGES = {
   AUTH: {
-    INVALID_CREDENTIALS: 'Invalid email or password',
-    ACCOUNT_LOCKED: 'Account temporarily locked due to too many failed attempts',
-    TOKEN_EXPIRED: 'Session expired, please log in again',
-    UNAUTHORIZED: 'You are not authorized to perform this action',
-    EMAIL_ALREADY_EXISTS: 'An account with this email already exists',
-    WEAK_PASSWORD: 'Password does not meet security requirements',
+    INVALID_CREDENTIALS: "Invalid email or password",
+    ACCOUNT_LOCKED:
+      "Account temporarily locked due to too many failed attempts",
+    TOKEN_EXPIRED: "Session expired, please log in again",
+    UNAUTHORIZED: "You are not authorized to perform this action",
+    EMAIL_ALREADY_EXISTS: "An account with this email already exists",
+    WEAK_PASSWORD: "Password does not meet security requirements",
   },
   VAULT: {
-    ENTRY_NOT_FOUND: 'Vault entry not found',
-    DECRYPTION_FAILED: 'Failed to decrypt vault entry',
-    FILE_TOO_LARGE: 'File size exceeds maximum allowed limit',
-    INVALID_CATEGORY: 'Invalid category name',
-    TOO_MANY_TAGS: 'Too many tags for this entry',
+    ENTRY_NOT_FOUND: "Vault entry not found",
+    DECRYPTION_FAILED: "Failed to decrypt vault entry",
+    FILE_TOO_LARGE: "File size exceeds maximum allowed limit",
+    INVALID_CATEGORY: "Invalid category name",
+    TOO_MANY_TAGS: "Too many tags for this entry",
   },
   GENERAL: {
-    INTERNAL_ERROR: 'An internal error occurred',
-    VALIDATION_FAILED: 'Input validation failed',
-    NETWORK_ERROR: 'Network connection error',
-    RATE_LIMITED: 'Too many requests, please try again later',
+    INTERNAL_ERROR: "An internal error occurred",
+    VALIDATION_FAILED: "Input validation failed",
+    NETWORK_ERROR: "Network connection error",
+    RATE_LIMITED: "Too many requests, please try again later",
   },
 } as const;

@@ -77,58 +77,63 @@ User Device                    Server                    Successor Device
 ### 3.2 Encryption Flow
 
 #### 3.2.1 Key Derivation
+
 ```typescript
 // Client-side key derivation
-const deriveMasterKey = async (password: string, salt: Uint8Array): Promise<CryptoKey> => {
+const deriveMasterKey = async (
+  password: string,
+  salt: Uint8Array,
+): Promise<CryptoKey> => {
   const baseKey = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     new TextEncoder().encode(password),
-    'PBKDF2',
+    "PBKDF2",
     false,
-    ['deriveBits']
+    ["deriveBits"],
   );
-  
+
   const masterKey = await crypto.subtle.deriveBits(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: salt,
       iterations: 100000,
-      hash: 'SHA-256'
+      hash: "SHA-256",
     },
     baseKey,
-    256
+    256,
   );
-  
-  return crypto.subtle.importKey(
-    'raw',
-    masterKey,
-    'AES-GCM',
-    false,
-    ['encrypt', 'decrypt']
-  );
+
+  return crypto.subtle.importKey("raw", masterKey, "AES-GCM", false, [
+    "encrypt",
+    "decrypt",
+  ]);
 };
 ```
 
 #### 3.2.2 Data Encryption
+
 ```typescript
 // Client-side data encryption
-const encryptData = async (data: string, masterKey: CryptoKey): Promise<EncryptedData> => {
+const encryptData = async (
+  data: string,
+  masterKey: CryptoKey,
+): Promise<EncryptedData> => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encodedData = new TextEncoder().encode(data);
-  
+
   const encryptedData = await crypto.subtle.encrypt(
     {
-      name: 'AES-GCM',
-      iv: iv
+      name: "AES-GCM",
+      iv: iv,
     },
     masterKey,
-    encodedData
+    encodedData,
   );
-  
+
   return {
     data: new Uint8Array(encryptedData),
     iv: iv,
-    algorithm: 'AES-GCM'
+    algorithm: "AES-GCM",
   };
 };
 ```
@@ -139,7 +144,11 @@ For multi-party handover, we use Shamir's Secret Sharing to split the master key
 
 ```typescript
 // Split master key for multiple successors
-const splitMasterKey = (masterKey: string, totalShares: number, requiredShares: number): string[] => {
+const splitMasterKey = (
+  masterKey: string,
+  totalShares: number,
+  requiredShares: number,
+): string[] => {
   // Use a cryptographically secure implementation of Shamir's Secret Sharing
   // Each share can reconstruct the master key when combined with others
   return shamirShare(masterKey, totalShares, requiredShares);
@@ -156,6 +165,7 @@ const reconstructMasterKey = (shares: string[]): string => {
 ### 4.1 Service Breakdown
 
 #### 4.1.1 Authentication Service
+
 - **Purpose**: Handle user authentication and session management
 - **Responsibilities**:
   - User registration and login
@@ -165,6 +175,7 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Rate limiting and brute force protection
 
 #### 4.1.2 User Service
+
 - **Purpose**: Manage user profiles and preferences
 - **Responsibilities**:
   - User profile management
@@ -173,6 +184,7 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Account settings
 
 #### 4.1.3 Vault Service
+
 - **Purpose**: Handle encrypted data storage and retrieval
 - **Responsibilities**:
   - Encrypted data storage
@@ -182,6 +194,7 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Version control
 
 #### 4.1.4 Handover Service
+
 - **Purpose**: Manage dead man's switch functionality
 - **Responsibilities**:
   - Inactivity detection
@@ -191,6 +204,7 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Audit logging
 
 #### 4.1.5 Notification Service
+
 - **Purpose**: Handle all communication with users
 - **Responsibilities**:
   - Email notifications
@@ -205,21 +219,24 @@ const reconstructMasterKey = (shares: string[]): string => {
 // Event-driven communication
 interface HandoverEvent {
   userId: string;
-  eventType: 'INACTIVITY_DETECTED' | 'HANDOVER_TRIGGERED' | 'SUCCESSOR_NOTIFIED';
+  eventType:
+    | "INACTIVITY_DETECTED"
+    | "HANDOVER_TRIGGERED"
+    | "SUCCESSOR_NOTIFIED";
   timestamp: Date;
   metadata: Record<string, any>;
 }
 
 // Publish event to message queue
-await eventBus.publish('handover.events', handoverEvent);
+await eventBus.publish("handover.events", handoverEvent);
 
 // Subscribe to events
-await eventBus.subscribe('handover.events', async (event: HandoverEvent) => {
+await eventBus.subscribe("handover.events", async (event: HandoverEvent) => {
   switch (event.eventType) {
-    case 'INACTIVITY_DETECTED':
+    case "INACTIVITY_DETECTED":
       await notificationService.sendReminder(event.userId);
       break;
-    case 'HANDOVER_TRIGGERED':
+    case "HANDOVER_TRIGGERED":
       await vaultService.prepareHandover(event.userId);
       break;
   }
@@ -339,19 +356,23 @@ PUT    /api/v1/notifications/preferences
 
 ```typescript
 // JWT middleware
-const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  
+const authenticateJWT = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const token = req.headers.authorization?.replace("Bearer ", "");
+
   if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
+    return res.status(401).json({ error: "No token provided" });
   }
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
@@ -359,7 +380,7 @@ const authenticateJWT = async (req: Request, res: Response, next: NextFunction) 
 const rateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP'
+  message: "Too many requests from this IP",
 });
 ```
 
@@ -505,10 +526,10 @@ interface AuditLog {
 const createAuditLog = async (log: AuditLog): Promise<void> => {
   log.hash = await generateHash(log);
   await auditService.create(log);
-  
+
   // Also store in blockchain for immutability
   await blockchainService.store(log);
 };
 ```
 
-This architecture ensures maximum security, privacy, and reliability while maintaining the zero-knowledge principle that users' data is never accessible to the service provider. 
+This architecture ensures maximum security, privacy, and reliability while maintaining the zero-knowledge principle that users' data is never accessible to the service provider.

@@ -42,4 +42,4 @@ export interface Session {
   ipAddress?: string;
   userAgent?: string;
   createdAt: Date;
-} 
+}

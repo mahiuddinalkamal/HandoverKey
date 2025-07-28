@@ -5,6 +5,7 @@
 <!-- Describe the changes made in this PR -->
 
 ### Type of Change
+
 - [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
 - [ ] ✨ New feature (non-breaking change which adds functionality)
 - [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
@@ -19,12 +20,14 @@
 <!-- Describe how you tested your changes -->
 
 ### Test Coverage
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] E2E tests added/updated (if applicable)
 - [ ] Manual testing completed
 
 ### Test Results
+
 <!-- Include test results, screenshots, or other evidence -->
 
 ## Security Considerations
@@ -93,6 +96,7 @@ Relates to #
 ---
 
 **Reviewer Guidelines:**
+
 - Verify all checklist items are completed
 - Test the changes locally if possible
 - Check for security implications

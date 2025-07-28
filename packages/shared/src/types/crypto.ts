@@ -51,10 +51,13 @@ export interface Successor {
 export interface HandoverEvent {
   id: string;
   userId: string;
-  eventType: 'INACTIVITY_DETECTED' | 'HANDOVER_TRIGGERED' | 'SUCCESSOR_NOTIFIED';
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  eventType:
+    | "INACTIVITY_DETECTED"
+    | "HANDOVER_TRIGGERED"
+    | "SUCCESSOR_NOTIFIED";
+  status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
   triggeredAt?: Date;
   completedAt?: Date;
   metadata?: Record<string, any>;
   createdAt: Date;
-} 
+}

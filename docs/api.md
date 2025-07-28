@@ -24,6 +24,7 @@ Authorization: Bearer <YOUR_JWT_TOKEN>
 Registers a new user account.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -33,6 +34,7 @@ Registers a new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "User registered successfully. Please verify your email."
@@ -46,6 +48,7 @@ Registers a new user account.
 Authenticates a user and returns an access token and refresh token.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -54,6 +57,7 @@ Authenticates a user and returns an access token and refresh token.
 ```
 
 **Response:**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1Ni...",
@@ -69,6 +73,7 @@ Authenticates a user and returns an access token and refresh token.
 Obtains a new access token using a refresh token.
 
 **Request Body:**
+
 ```json
 {
   "refreshToken": "eyJhbGciOiJIUzI1Ni..."
@@ -76,6 +81,7 @@ Obtains a new access token using a refresh token.
 ```
 
 **Response:**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1Ni...",
@@ -92,6 +98,7 @@ Obtains a new access token using a refresh token.
 Retrieves the authenticated user's profile information.
 
 **Response:**
+
 ```json
 {
   "id": "uuid-user-id",
@@ -108,6 +115,7 @@ Retrieves the authenticated user's profile information.
 Updates the authenticated user's profile information.
 
 **Request Body:**
+
 ```json
 {
   "email": "new_email@example.com",
@@ -116,6 +124,7 @@ Updates the authenticated user's profile information.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Profile updated successfully."
@@ -131,6 +140,7 @@ Updates the authenticated user's profile information.
 Creates a new encrypted vault entry. The `encryptedData` must be AES-256-GCM encrypted client-side.
 
 **Request Body:**
+
 ```json
 {
   "encryptedData": "base64_encoded_encrypted_data",
@@ -142,6 +152,7 @@ Creates a new encrypted vault entry. The `encryptedData` must be AES-256-GCM enc
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid-entry-id",
@@ -156,11 +167,13 @@ Creates a new encrypted vault entry. The `encryptedData` must be AES-256-GCM enc
 Retrieves a list of all encrypted vault entries for the authenticated user.
 
 **Query Parameters:**
+
 - `category`: Filter by category (optional)
 - `tag`: Filter by tag (optional)
 - `search`: Search within encrypted data (server-side encrypted search, if implemented)
 
 **Response:**
+
 ```json
 [
   {
@@ -193,6 +206,7 @@ Retrieves a list of all encrypted vault entries for the authenticated user.
 Retrieves a single encrypted vault entry by ID.
 
 **Response:**
+
 ```json
 {
   "id": "uuid-entry-id",
@@ -213,6 +227,7 @@ Retrieves a single encrypted vault entry by ID.
 Updates an existing encrypted vault entry.
 
 **Request Body:**
+
 ```json
 {
   "encryptedData": "base64_encoded_updated_encrypted_data",
@@ -224,6 +239,7 @@ Updates an existing encrypted vault entry.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Vault entry updated successfully."
@@ -237,6 +253,7 @@ Updates an existing encrypted vault entry.
 Deletes a vault entry.
 
 **Response:**
+
 ```json
 {
   "message": "Vault entry deleted successfully."
@@ -252,6 +269,7 @@ Deletes a vault entry.
 Adds a new successor to the user's account.
 
 **Request Body:**
+
 ```json
 {
   "email": "successor@example.com",
@@ -262,6 +280,7 @@ Adds a new successor to the user's account.
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid-successor-id",
@@ -276,6 +295,7 @@ Adds a new successor to the user's account.
 Retrieves a list of all successors for the authenticated user.
 
 **Response:**
+
 ```json
 [
   {
@@ -304,6 +324,7 @@ Retrieves a list of all successors for the authenticated user.
 Updates an existing successor's information.
 
 **Request Body:**
+
 ```json
 {
   "name": "Jonathan Doe",
@@ -312,6 +333,7 @@ Updates an existing successor's information.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Successor updated successfully."
@@ -325,6 +347,7 @@ Updates an existing successor's information.
 Deletes a successor.
 
 **Response:**
+
 ```json
 {
   "message": "Successor deleted successfully."
@@ -340,6 +363,7 @@ Deletes a successor.
 Records a user activity to reset the dead man's switch timer.
 
 **Response:**
+
 ```json
 {
   "message": "Activity recorded. Dead man's switch timer reset."
@@ -353,6 +377,7 @@ Records a user activity to reset the dead man's switch timer.
 Retrieves the current status of the dead man's switch for the authenticated user.
 
 **Response:**
+
 ```json
 {
   "lastActivity": "2023-07-26T10:30:00Z",
@@ -370,6 +395,7 @@ Retrieves the current status of the dead man's switch for the authenticated user
 Retrieves a list of audit logs related to handover events.
 
 **Response:**
+
 ```json
 [
   {
@@ -392,6 +418,7 @@ Retrieves a list of audit logs related to handover events.
 API errors are returned with appropriate HTTP status codes and a JSON error object.
 
 **Example Error Response:**
+
 ```json
 {
   "error": "Invalid credentials",

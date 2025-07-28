@@ -1,5 +1,5 @@
-import { ShamirShare } from '@handoverkey/shared';
-import { v4 as uuidv4 } from 'uuid';
+import { ShamirShare } from "@handoverkey/shared";
+import { v4 as uuidv4 } from "uuid";
 
 export class ShamirSecretSharing {
   private static readonly PRIME = 2n ** 31n - 1n; // Smaller prime for better handling
@@ -7,14 +7,14 @@ export class ShamirSecretSharing {
   static splitSecret(
     secret: string,
     totalShares: number,
-    threshold: number
+    threshold: number,
   ): ShamirShare[] {
     if (threshold > totalShares) {
-      throw new Error('Threshold cannot be greater than total shares');
+      throw new Error("Threshold cannot be greater than total shares");
     }
 
     if (threshold < 2) {
-      throw new Error('Threshold must be at least 2');
+      throw new Error("Threshold must be at least 2");
     }
 
     // Convert secret to bytes and then to numbers for processing
@@ -57,7 +57,7 @@ export class ShamirSecretSharing {
         id: uuidv4(),
         share: JSON.stringify(shareData),
         threshold,
-        totalShares
+        totalShares,
       });
     }
 
@@ -66,7 +66,7 @@ export class ShamirSecretSharing {
 
   static reconstructSecret(shares: ShamirShare[]): string {
     if (shares.length < 2) {
-      throw new Error('At least 2 shares are required for reconstruction');
+      throw new Error("At least 2 shares are required for reconstruction");
     }
 
     const threshold = shares[0].threshold;
@@ -75,9 +75,9 @@ export class ShamirSecretSharing {
     }
 
     // Parse share data
-    const shareData: number[][][] = shares.slice(0, threshold).map(share =>
-      JSON.parse(share.share)
-    );
+    const shareData: number[][][] = shares
+      .slice(0, threshold)
+      .map((share) => JSON.parse(share.share));
 
     // Determine the length of the original secret
     const secretLength = shareData[0].length;
@@ -110,21 +110,23 @@ export class ShamirSecretSharing {
 
   private static getCrypto(): Crypto {
     // Modern approach: use globalThis.crypto which is available in Node.js 16+ and all modern browsers
-    if (typeof globalThis !== 'undefined' && globalThis.crypto) {
+    if (typeof globalThis !== "undefined" && globalThis.crypto) {
       return globalThis.crypto;
     }
 
     // Browser fallback
-    if (typeof window !== 'undefined' && window.crypto) {
+    if (typeof window !== "undefined" && window.crypto) {
       return window.crypto;
     }
 
     // Node.js fallback - check if crypto is available on global
-    if (typeof global !== 'undefined' && (global as any).crypto) {
+    if (typeof global !== "undefined" && (global as any).crypto) {
       return (global as any).crypto;
     }
 
-    throw new Error('Web Crypto API not available. Please ensure you are using Node.js 16+ or a modern browser.');
+    throw new Error(
+      "Web Crypto API not available. Please ensure you are using Node.js 16+ or a modern browser.",
+    );
   }
 
   private static evaluatePolynomial(coefficients: bigint[], x: bigint): bigint {
@@ -132,7 +134,7 @@ export class ShamirSecretSharing {
     let power = 1n;
 
     for (const coefficient of coefficients) {
-      result = (result + (coefficient * power) % this.PRIME) % this.PRIME;
+      result = (result + ((coefficient * power) % this.PRIME)) % this.PRIME;
       power = (power * x) % this.PRIME;
     }
 
@@ -157,7 +159,8 @@ export class ShamirSecretSharing {
 
       // Handle negative values
       if (numerator < 0n) numerator = (numerator + this.PRIME) % this.PRIME;
-      if (denominator < 0n) denominator = (denominator + this.PRIME) % this.PRIME;
+      if (denominator < 0n)
+        denominator = (denominator + this.PRIME) % this.PRIME;
 
       const denominatorInverse = this.modInverse(denominator);
       const lagrangeCoeff = (numerator * denominatorInverse) % this.PRIME;
@@ -180,8 +183,6 @@ export class ShamirSecretSharing {
       [oldT, t] = [t, oldT - quotient * t];
     }
 
-    return (oldS % this.PRIME + this.PRIME) % this.PRIME;
+    return ((oldS % this.PRIME) + this.PRIME) % this.PRIME;
   }
-
-
-} 
+}

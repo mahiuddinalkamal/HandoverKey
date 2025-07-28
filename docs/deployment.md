@@ -16,29 +16,35 @@ This guide provides instructions for deploying the HandoverKey application. It c
 ### 2.2 Steps
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/mahiuddinalkamal/handoverkey.git
    cd handoverkey
    ```
 
 2. **Install Node.js dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Prepare environment variables:**
+
    ```bash
    cp .env.example .env
    # Edit .env if necessary (e.g., change database credentials)
    ```
 
 4. **Start Docker services (PostgreSQL, Redis):**
+
    ```bash
    docker-compose up -d
    ```
+
    This will start the PostgreSQL database and Redis cache in Docker containers.
 
 5. **Run database migrations:**
+
    ```bash
    # Navigate to the database package
    cd packages/database
@@ -48,13 +54,16 @@ This guide provides instructions for deploying the HandoverKey application. It c
    node dist/migrate.js
    cd ../..
    ```
-   *Note: The exact migration command depends on the database ORM/migration tool used in `packages/database`.*
+
+   _Note: The exact migration command depends on the database ORM/migration tool used in `packages/database`._
 
 6. **Start all application services:**
+
    ```bash
    chmod +x scripts/start-all.sh
    ./scripts/start-all.sh
    ```
+
    This script will typically build and start the `api`, `web`, `mobile` (development server), and `cli` (if applicable) services.
 
 7. **Access the web application:**
@@ -93,6 +102,7 @@ A staging environment mirrors the production environment and is used for testing
      ```
 
 2. **Push Images to Registry:**
+
    ```bash
    docker push your-registry/api:latest
    docker push your-registry/web:latest
@@ -130,19 +140,19 @@ Production deployment requires robust infrastructure, security, and monitoring.
 - **High Availability**: Deploy services across multiple availability zones/regions.
 - **Scalability**: Implement auto-scaling for microservices based on load.
 - **Security**:
-    - **Network**: VPCs, private subnets, security groups, WAF, DDoS protection.
-    - **Secrets Management**: Use dedicated secrets management services (e.g., AWS Secrets Manager, HashiCorp Vault).
-    - **TLS**: Enforce TLS 1.3 everywhere.
-    - **Regular Audits**: Conduct security audits and penetration tests.
+  - **Network**: VPCs, private subnets, security groups, WAF, DDoS protection.
+  - **Secrets Management**: Use dedicated secrets management services (e.g., AWS Secrets Manager, HashiCorp Vault).
+  - **TLS**: Enforce TLS 1.3 everywhere.
+  - **Regular Audits**: Conduct security audits and penetration tests.
 - **Monitoring & Logging**:
-    - **Centralized Logging**: ELK Stack (Elasticsearch, Logstash, Kibana) or cloud-native logging.
-    - **Metrics**: Prometheus + Grafana for application and infrastructure metrics.
-    - **Alerting**: Configure alerts for critical issues (e.g., high error rates, service downtime).
-    - **Tracing**: Distributed tracing (e.g., Jaeger, OpenTelemetry) for microservices.
+  - **Centralized Logging**: ELK Stack (Elasticsearch, Logstash, Kibana) or cloud-native logging.
+  - **Metrics**: Prometheus + Grafana for application and infrastructure metrics.
+  - **Alerting**: Configure alerts for critical issues (e.g., high error rates, service downtime).
+  - **Tracing**: Distributed tracing (e.g., Jaeger, OpenTelemetry) for microservices.
 - **Backup & Disaster Recovery**:
-    - **Automated Backups**: Regular, encrypted backups of databases and persistent storage.
-    - **Point-in-Time Recovery**: For databases.
-    - **Disaster Recovery Plan**: Documented RTO/RPO and recovery procedures.
+  - **Automated Backups**: Regular, encrypted backups of databases and persistent storage.
+  - **Point-in-Time Recovery**: For databases.
+  - **Disaster Recovery Plan**: Documented RTO/RPO and recovery procedures.
 - **Compliance**: Ensure adherence to relevant regulations (GDPR, CCPA, SOC 2).
 
 ### 4.2 Recommended Production Stack
