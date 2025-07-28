@@ -1,4 +1,4 @@
-import { VaultEntry, EncryptedData } from '@handoverkey/shared';
+import { VaultEntry } from '@handoverkey/shared';
 import { Encryption } from './encryption';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -77,7 +77,7 @@ export class VaultManager {
           results.push(entry);
         }
       } catch (error) {
-        console.warn(`Failed to decrypt entry ${entry.id}:`, error);
+        console.error(`Failed to decrypt entry ${entry.id}:`, error);
       }
     }
 

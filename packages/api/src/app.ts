@@ -15,7 +15,6 @@ import vaultRoutes from './routes/vault-routes';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.API_PORT || 3001;
 
 // Initialize database connection
 DatabaseConnection.initialize();
@@ -52,7 +51,7 @@ app.use('*', (req, res) => {
 });
 
 // Error handling middleware
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Unhandled error:', error);
   
   if (error.type === 'entity.parse.failed') {

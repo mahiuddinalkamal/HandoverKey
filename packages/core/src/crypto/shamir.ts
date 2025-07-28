@@ -103,7 +103,13 @@ export class ShamirSecretSharing {
 
   private static generateRandomCoefficient(): bigint {
     // Use Node.js crypto or Web Crypto API
-    const cryptoObj = typeof window !== 'undefined' ? window.crypto : require('crypto').webcrypto;
+    let cryptoObj: Crypto;
+    if (typeof window !== 'undefined') {
+      cryptoObj = window.crypto;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      cryptoObj = require('crypto').webcrypto;
+    }
     const randomValue = cryptoObj.getRandomValues(new Uint32Array(1))[0];
     return BigInt(randomValue) % this.PRIME;
   }

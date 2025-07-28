@@ -44,7 +44,7 @@ export class JWTManager {
     try {
       const decoded = jwt.verify(token, this.JWT_SECRET) as JWTPayload;
       return decoded;
-    } catch (error) {
+    } catch {
       throw new Error('Invalid or expired token');
     }
   }
@@ -52,7 +52,7 @@ export class JWTManager {
   static decodeToken(token: string): JWTPayload | null {
     try {
       return jwt.decode(token) as JWTPayload;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -71,7 +71,7 @@ export class JWTManager {
         return new Date(decoded.exp * 1000);
       }
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }

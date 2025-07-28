@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { UserService } from '../services/user-service';
 import { JWTManager } from '../auth/jwt';
-import { PasswordUtils } from '../auth/password';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { UserRegistration, UserLogin } from '@handoverkey/shared';
 

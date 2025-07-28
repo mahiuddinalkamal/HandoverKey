@@ -9,7 +9,7 @@ const Home: React.FC = () => {
           <div className="text-center">
             <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
               <span className="block">Secure Digital Legacy</span>
-              <span className="block text-primary-600">with Dead Man's Switch</span>
+              <span className="block text-primary-600">with Dead Man&apos;s Switch</span>
             </h1>
             <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
               HandoverKey is a stupidly secure, open-source digital legacy platform that ensures your digital assets are safely passed to trusted contacts if something happens to you.
@@ -76,7 +76,7 @@ const Home: React.FC = () => {
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-gray-900">Multi-Party Handover</h3>
                   <p className="mt-2 text-base text-gray-500">
-                    Use Shamir's Secret Sharing to require multiple trusted contacts to confirm before data release.
+                    Use Shamir&apos;s Secret Sharing to require multiple trusted contacts to confirm before data release.
                   </p>
                 </div>
               </div>

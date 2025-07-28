@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { VaultService } from '../services/vault-service';
 import { AuthenticatedRequest } from '../middleware/auth';

@@ -23,7 +23,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
     const decoded = JWTManager.verifyToken(token);
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ error: 'Invalid token' });
   }
 };
@@ -45,7 +45,7 @@ export const optionalAuth = (req: AuthenticatedRequest, res: Response, next: Nex
       const decoded = JWTManager.verifyToken(token);
       req.user = decoded;
     }
-  } catch (error) {
+  } catch {
     // Silently ignore invalid tokens for optional auth
   }
   next();
