@@ -20,39 +20,39 @@ export class ShamirSecretSharing {
     // Convert secret to bytes and then to numbers for processing
     const secretBytes = new TextEncoder().encode(secret);
     const shares: ShamirShare[] = [];
-    
+
     // Process each byte separately to avoid large number issues
     const byteShares: number[][][] = [];
-    
+
     for (let byteIndex = 0; byteIndex < secretBytes.length; byteIndex++) {
       const secretByte = BigInt(secretBytes[byteIndex]);
       const coefficients = [secretByte];
-      
+
       // Generate random coefficients for this byte
       for (let i = 1; i < threshold; i++) {
         coefficients.push(this.generateRandomCoefficient());
       }
-      
+
       const currentByteShares: number[][] = [];
-      
+
       // Generate shares for this byte
       for (let shareIndex = 1; shareIndex <= totalShares; shareIndex++) {
         const x = BigInt(shareIndex);
         const y = this.evaluatePolynomial(coefficients, x);
         currentByteShares.push([shareIndex, Number(y)]);
       }
-      
+
       byteShares.push(currentByteShares);
     }
-    
+
     // Combine all byte shares into final shares
     for (let shareIndex = 0; shareIndex < totalShares; shareIndex++) {
       const shareData: number[][] = [];
-      
+
       for (let byteIndex = 0; byteIndex < secretBytes.length; byteIndex++) {
         shareData.push(byteShares[byteIndex][shareIndex]);
       }
-      
+
       shares.push({
         id: uuidv4(),
         share: JSON.stringify(shareData),
@@ -75,27 +75,27 @@ export class ShamirSecretSharing {
     }
 
     // Parse share data
-    const shareData: number[][][] = shares.slice(0, threshold).map(share => 
+    const shareData: number[][][] = shares.slice(0, threshold).map(share =>
       JSON.parse(share.share)
     );
-    
+
     // Determine the length of the original secret
     const secretLength = shareData[0].length;
     const reconstructedBytes: number[] = [];
-    
+
     // Reconstruct each byte
     for (let byteIndex = 0; byteIndex < secretLength; byteIndex++) {
       const points: [bigint, bigint][] = [];
-      
+
       for (let shareIndex = 0; shareIndex < threshold; shareIndex++) {
         const [x, y] = shareData[shareIndex][byteIndex];
         points.push([BigInt(x), BigInt(y)]);
       }
-      
+
       const reconstructedByte = this.lagrangeInterpolation(points);
       reconstructedBytes.push(Number(reconstructedByte));
     }
-    
+
     // Convert back to string
     const reconstructedUint8Array = new Uint8Array(reconstructedBytes);
     return new TextDecoder().decode(reconstructedUint8Array);
@@ -107,8 +107,8 @@ export class ShamirSecretSharing {
     if (typeof window !== 'undefined') {
       cryptoObj = window.crypto;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      cryptoObj = require('crypto').webcrypto;
+      const crypto = require('crypto');
+      cryptoObj = crypto.webcrypto;
     }
     const randomValue = cryptoObj.getRandomValues(new Uint32Array(1))[0];
     return BigInt(randomValue) % this.PRIME;
