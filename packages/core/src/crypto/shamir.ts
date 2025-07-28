@@ -102,16 +102,29 @@ export class ShamirSecretSharing {
   }
 
   private static generateRandomCoefficient(): bigint {
-    // Use Node.js crypto or Web Crypto API
-    let cryptoObj: Crypto;
-    if (typeof window !== 'undefined') {
-      cryptoObj = window.crypto;
-    } else {
-      const crypto = require('crypto');
-      cryptoObj = crypto.webcrypto;
-    }
+    // Use Web Crypto API (available in both browser and Node.js 16+)
+    const cryptoObj = this.getCrypto();
     const randomValue = cryptoObj.getRandomValues(new Uint32Array(1))[0];
     return BigInt(randomValue) % this.PRIME;
+  }
+
+  private static getCrypto(): Crypto {
+    // Modern approach: use globalThis.crypto which is available in Node.js 16+ and all modern browsers
+    if (typeof globalThis !== 'undefined' && globalThis.crypto) {
+      return globalThis.crypto;
+    }
+
+    // Browser fallback
+    if (typeof window !== 'undefined' && window.crypto) {
+      return window.crypto;
+    }
+
+    // Node.js fallback - check if crypto is available on global
+    if (typeof global !== 'undefined' && (global as any).crypto) {
+      return (global as any).crypto;
+    }
+
+    throw new Error('Web Crypto API not available. Please ensure you are using Node.js 16+ or a modern browser.');
   }
 
   private static evaluatePolynomial(coefficients: bigint[], x: bigint): bigint {

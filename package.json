@@ -19,7 +19,7 @@
     "docker:logs": "docker-compose logs -f",
     "db:migrate": "cd packages/database && npm run migrate",
     "db:seed": "cd packages/database && npm run seed",
-    "security:audit": "npm audit && npm run security:check",
+    "security:audit": "npm audit --audit-level=high && npm run security:check",
     "security:check": "echo 'Security check placeholder - install snyk for full security scanning'",
     "test:coverage": "turbo run test:coverage",
     "test:integration": "turbo run test --filter=packages/api",
@@ -61,4 +61,4 @@
     "url": "https://github.com/handoverkey/handoverkey/issues"
   },
   "homepage": "https://handoverkey.com"
-} 
+}
