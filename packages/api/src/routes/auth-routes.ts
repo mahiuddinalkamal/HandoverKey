@@ -1,42 +1,33 @@
-import { Router } from 'express';
-import { AuthController } from '../controllers/auth-controller';
-import { authenticateJWT, requireAuth } from '../middleware/auth';
-import { authRateLimiter } from '../middleware/security';
+import { Router } from "express";
+import { AuthController } from "../controllers/auth-controller";
+import { authenticateJWT, requireAuth } from "../middleware/auth";
+import { authRateLimiter } from "../middleware/security";
 
 const router = Router();
 
 // Registration endpoint
-router.post('/register', 
+router.post(
+  "/register",
   authRateLimiter,
   AuthController.registerValidation,
-  AuthController.register
+  AuthController.register,
 );
 
 // Login endpoint
-router.post('/login',
+router.post(
+  "/login",
   authRateLimiter,
   AuthController.loginValidation,
-  AuthController.login
+  AuthController.login,
 );
 
 // Logout endpoint (requires authentication)
-router.post('/logout',
-  authenticateJWT,
-  requireAuth,
-  AuthController.logout
-);
+router.post("/logout", authenticateJWT, requireAuth, AuthController.logout);
 
 // Token refresh endpoint
-router.post('/refresh',
-  authRateLimiter,
-  AuthController.refreshToken
-);
+router.post("/refresh", authRateLimiter, AuthController.refreshToken);
 
 // Get user profile (requires authentication)
-router.get('/profile',
-  authenticateJWT,
-  requireAuth,
-  AuthController.getProfile
-);
+router.get("/profile", authenticateJWT, requireAuth, AuthController.getProfile);
 
-export default router; 
+export default router;

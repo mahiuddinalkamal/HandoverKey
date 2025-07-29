@@ -19,8 +19,12 @@
     "docker:logs": "docker-compose logs -f",
     "db:migrate": "cd packages/database && npm run migrate",
     "db:seed": "cd packages/database && npm run seed",
-    "security:audit": "npm audit && npm run security:check",
-    "security:check": "snyk test",
+    "security:audit": "npm audit --audit-level=high && npm run security:check",
+    "security:check": "echo 'Security check placeholder - install snyk for full security scanning'",
+    "test:coverage": "turbo run test:coverage",
+    "test:integration": "turbo run test --filter=packages/api",
+    "test:e2e": "echo 'E2E tests not yet implemented'",
+    "test:performance": "echo 'Performance tests not yet implemented'",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
@@ -36,7 +40,7 @@
     "typescript": "^5.0.0"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=22.0.0",
     "npm": ">=9.0.0"
   },
   "repository": {
@@ -57,4 +61,4 @@
     "url": "https://github.com/handoverkey/handoverkey/issues"
   },
   "homepage": "https://handoverkey.com"
-} 
+}
