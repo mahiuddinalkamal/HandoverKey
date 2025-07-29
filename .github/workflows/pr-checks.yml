@@ -27,6 +27,7 @@ jobs:
             chore
             ci
             build
+            Bump
           requireScope: false
           disallowScopes: |
             release
