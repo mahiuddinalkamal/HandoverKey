@@ -10,8 +10,8 @@
     "start": "node dist/index.js",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
+    "test:coverage": "jest --coverage --passWithNoTests",
+    "lint": "eslint src",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
@@ -25,7 +25,7 @@
     "express-validator": "^7.0.0",
     "dotenv": "^16.3.0",
     "pg": "^8.11.0",
-    "redis": "^4.6.0",
+    "redis": "^5.6.1",
     "nodemailer": "^6.9.0",
     "uuid": "^9.0.0"
   },
@@ -50,4 +50,4 @@
     "@handoverkey/core": "*",
     "@handoverkey/database": "*"
   }
-} 
+}

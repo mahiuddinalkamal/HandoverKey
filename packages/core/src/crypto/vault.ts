@@ -1,6 +1,6 @@
-import { VaultEntry, EncryptedData } from '@handoverkey/shared';
-import { Encryption } from './encryption';
-import { v4 as uuidv4 } from 'uuid';
+import { VaultEntry } from "@handoverkey/shared";
+import { Encryption } from "./encryption";
+import { v4 as uuidv4 } from "uuid";
 
 export class VaultManager {
   static async createEntry(
@@ -8,10 +8,10 @@ export class VaultManager {
     data: string | Uint8Array,
     key: CryptoKey,
     category?: string,
-    tags?: string[]
+    tags?: string[],
   ): Promise<VaultEntry> {
     const encryptedData = await Encryption.encrypt(data, key);
-    
+
     const entry: VaultEntry = {
       id: uuidv4(),
       userId,
@@ -20,7 +20,7 @@ export class VaultManager {
       tags,
       version: 1,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     return entry;
@@ -31,30 +31,30 @@ export class VaultManager {
     newData: string | Uint8Array,
     key: CryptoKey,
     category?: string,
-    tags?: string[]
+    tags?: string[],
   ): Promise<VaultEntry> {
     const encryptedData = await Encryption.encrypt(newData, key);
-    
+
     return {
       ...entry,
       encryptedData,
       category: category ?? entry.category,
       tags: tags ?? entry.tags,
       version: entry.version + 1,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
   static async decryptEntry(
     entry: VaultEntry,
-    key: CryptoKey
+    key: CryptoKey,
   ): Promise<string> {
     return Encryption.decrypt(entry.encryptedData, key);
   }
 
   static async decryptFileEntry(
     entry: VaultEntry,
-    key: CryptoKey
+    key: CryptoKey,
   ): Promise<Uint8Array> {
     return Encryption.decryptFile(entry.encryptedData, key);
   }
@@ -62,7 +62,7 @@ export class VaultManager {
   static async searchEntries(
     entries: VaultEntry[],
     query: string,
-    key: CryptoKey
+    key: CryptoKey,
   ): Promise<VaultEntry[]> {
     const results: VaultEntry[] = [];
     const lowerQuery = query.toLowerCase();
@@ -70,14 +70,18 @@ export class VaultManager {
     for (const entry of entries) {
       try {
         const decryptedData = await this.decryptEntry(entry, key);
-        
-        if (decryptedData.toLowerCase().includes(lowerQuery) ||
-            entry.category?.toLowerCase().includes(lowerQuery) ||
-            entry.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))) {
+
+        if (
+          decryptedData.toLowerCase().includes(lowerQuery) ||
+          entry.category?.toLowerCase().includes(lowerQuery) ||
+          entry.tags?.some((tag: string) =>
+            tag.toLowerCase().includes(lowerQuery),
+          )
+        ) {
           results.push(entry);
         }
       } catch (error) {
-        console.warn(`Failed to decrypt entry ${entry.id}:`, error);
+        console.error(`Failed to decrypt entry ${entry.id}:`, error);
       }
     }
 
@@ -86,7 +90,7 @@ export class VaultManager {
 
   static async exportEntry(
     entry: VaultEntry,
-    key: CryptoKey
+    key: CryptoKey,
   ): Promise<{
     id: string;
     data: string;
@@ -97,7 +101,7 @@ export class VaultManager {
     updatedAt: Date;
   }> {
     const decryptedData = await this.decryptEntry(entry, key);
-    
+
     return {
       id: entry.id,
       data: decryptedData,
@@ -105,7 +109,7 @@ export class VaultManager {
       tags: entry.tags,
       version: entry.version,
       createdAt: entry.createdAt,
-      updatedAt: entry.updatedAt
+      updatedAt: entry.updatedAt,
     };
   }
 
@@ -116,36 +120,33 @@ export class VaultManager {
       category?: string;
       tags?: string[];
     },
-    key: CryptoKey
+    key: CryptoKey,
   ): Promise<VaultEntry> {
     return this.createEntry(
       userId,
       exportedData.data,
       key,
       exportedData.category,
-      exportedData.tags
+      exportedData.tags,
     );
   }
 
   static getEntriesByCategory(
     entries: VaultEntry[],
-    category: string
+    category: string,
   ): VaultEntry[] {
-    return entries.filter(entry => entry.category === category);
+    return entries.filter((entry) => entry.category === category);
   }
 
-  static getEntriesByTag(
-    entries: VaultEntry[],
-    tag: string
-  ): VaultEntry[] {
-    return entries.filter(entry => 
-      entry.tags?.some(t => t === tag)
+  static getEntriesByTag(entries: VaultEntry[], tag: string): VaultEntry[] {
+    return entries.filter((entry) =>
+      entry.tags?.some((t: string) => t === tag),
     );
   }
 
   static getCategories(entries: VaultEntry[]): string[] {
     const categories = new Set<string>();
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.category) {
         categories.add(entry.category);
       }
@@ -155,8 +156,8 @@ export class VaultManager {
 
   static getTags(entries: VaultEntry[]): string[] {
     const tags = new Set<string>();
-    entries.forEach(entry => {
-      entry.tags?.forEach(tag => tags.add(tag));
+    entries.forEach((entry) => {
+      entry.tags?.forEach((tag: string) => tags.add(tag));
     });
     return Array.from(tags).sort();
   }
@@ -174,4 +175,4 @@ export class VaultManager {
       entry.updatedAt
     );
   }
-} 
+}
