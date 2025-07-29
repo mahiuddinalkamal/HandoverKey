@@ -10,12 +10,11 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "crypto": "^1.0.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -29,4 +28,4 @@
   "peerDependencies": {
     "@handoverkey/shared": "*"
   }
-} 
+}

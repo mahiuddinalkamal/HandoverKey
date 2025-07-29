@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -9,7 +9,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     try {
       await logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -20,7 +20,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
-                <span className="text-xl font-bold text-primary-600">HandoverKey</span>
+                <span className="text-xl font-bold text-primary-600">
+                  HandoverKey
+                </span>
               </Link>
             </div>
 
@@ -51,10 +53,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   >
                     Login
                   </Link>
-                  <Link
-                    to="/register"
-                    className="btn-primary text-sm"
-                  >
+                  <Link to="/register" className="btn-primary text-sm">
                     Sign Up
                   </Link>
                 </>
@@ -64,11 +63,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">{children}</main>
     </div>
   );
 };
 
-export default Layout; 
+export default Layout;

@@ -8,15 +8,15 @@ Please take a moment to review this document to ensure a smooth and effective co
 
 1.  [Code of Conduct](#1-code-of-conduct)
 2.  [How to Contribute](#2-how-to-contribute)
-    *   [Reporting Bugs](#21-reporting-bugs)
-    *   [Suggesting Enhancements](#22-suggesting-enhancements)
-    *   [Your First Code Contribution](#23-your-first-code-contribution)
-    *   [Pull Request Guidelines](#24-pull-request-guidelines)
+    - [Reporting Bugs](#21-reporting-bugs)
+    - [Suggesting Enhancements](#22-suggesting-enhancements)
+    - [Your First Code Contribution](#23-your-first-code-contribution)
+    - [Pull Request Guidelines](#24-pull-request-guidelines)
 3.  [Development Setup](#3-development-setup)
-    *   [Prerequisites](#31-prerequisites)
-    *   [Getting Started](#32-getting-started)
-    *   [Running Tests](#33-running-tests)
-    *   [Code Style](#34-code-style)
+    - [Prerequisites](#31-prerequisites)
+    - [Getting Started](#32-getting-started)
+    - [Running Tests](#33-running-tests)
+    - [Code Style](#34-code-style)
 4.  [Project Structure](#4-project-structure)
 5.  [Security Policy](#5-security-policy)
 6.  [License](#6-license)
@@ -33,11 +33,11 @@ If you find a bug, please open an issue on our [GitHub Issues](https://github.co
 
 When reporting a bug, please include:
 
-*   A clear and concise description of the bug.
-*   Steps to reproduce the behavior.
-*   Expected behavior.
-*   Screenshots or error messages (if applicable).
-*   Your operating system, browser, and HandoverKey version.
+- A clear and concise description of the bug.
+- Steps to reproduce the behavior.
+- Expected behavior.
+- Screenshots or error messages (if applicable).
+- Your operating system, browser, and HandoverKey version.
 
 ### 2.2 Suggesting Enhancements
 
@@ -45,9 +45,9 @@ We welcome suggestions for new features or improvements. Please open an issue on
 
 When suggesting an enhancement, please include:
 
-*   A clear and concise description of the proposed enhancement.
-*   Why this enhancement would be useful.
-*   Any potential alternatives or considerations.
+- A clear and concise description of the proposed enhancement.
+- Why this enhancement would be useful.
+- Any potential alternatives or considerations.
 
 ### 2.3 Your First Code Contribution
 
@@ -63,45 +63,51 @@ If you're looking to make your first contribution, look for issues labeled `good
 6.  **Commit your changes** with a clear and concise commit message. Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) if possible (e.g., `feat: add user registration`, `fix: resolve login bug`).
 7.  **Push your branch** to your forked repository.
 8.  **Open a Pull Request** to the `main` branch of the original repository.
-    *   Provide a clear title and description for your PR.
-    *   Reference any related issues (e.g., `Closes #123`).
-    *   Ensure all CI checks pass.
+    - Provide a clear title and description for your PR.
+    - Reference any related issues (e.g., `Closes #123`).
+    - Ensure all CI checks pass.
 
 ## 3. Development Setup
 
 ### 3.1 Prerequisites
 
-*   Node.js (LTS version, currently 18+)
-*   npm (Node Package Manager)
-*   Docker and Docker Compose (for local database and Redis)
-*   Git
+- Node.js (LTS version, currently 22+)
+- npm (Node Package Manager)
+- Docker and Docker Compose (for local database and Redis)
+- Git
 
 ### 3.2 Getting Started
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/mahiuddinalkamal/handoverkey.git
     cd handoverkey
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     npm install
     ```
+
     This will install dependencies for the monorepo and all its packages.
 
 3.  **Set up environment variables:**
+
     ```bash
     cp .env.example .env
     # You might need to adjust values in .env for your local setup
     ```
 
 4.  **Start local services (PostgreSQL, Redis):**
+
     ```bash
     docker-compose up -d
     ```
 
 5.  **Run database migrations:**
+
     ```bash
     # Navigate to the database package
     cd packages/database

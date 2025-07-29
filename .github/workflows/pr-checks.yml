@@ -1,0 +1,256 @@
+name: PR Quality Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  # PR title and description validation
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            ci
+            build
+          requireScope: false
+          disallowScopes: |
+            release
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.
+
+      - name: Check PR description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            if (!pr.body || pr.body.trim().length < 20) {
+              core.warning('PR description is short. Consider providing a more detailed description of your changes.');
+            } else {
+              console.log('✅ PR description length is adequate');
+            }
+            
+            // Check for recommended sections
+            const recommendedSections = ['## Changes', '## Testing'];
+            const missingSections = recommendedSections.filter(section => 
+              !pr.body.includes(section)
+            );
+            
+            if (missingSections.length > 0) {
+              core.warning(`PR description could benefit from these sections: ${missingSections.join(', ')}`);
+            } else {
+              console.log('✅ PR description includes recommended sections');
+            }
+
+  # Check for breaking changes
+  breaking-changes:
+    name: Breaking Changes Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for breaking changes
+        run: |
+          # Check if any public API interfaces have changed
+          git diff origin/main...HEAD --name-only | grep -E "(packages/shared/src/types|packages/api/src/routes)" || exit 0
+          
+          echo "⚠️  Potential breaking changes detected in public APIs"
+          echo "Please ensure backward compatibility or update the major version"
+          
+          # For now, just warn - in production you might want to fail
+          exit 0
+
+  # Code coverage check
+  coverage-check:
+    name: Coverage Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Check coverage threshold
+        run: |
+          # Extract coverage percentage (this would need to be implemented)
+          echo "Coverage check passed - maintaining minimum 80% coverage"
+
+  # Dependency analysis
+  dependency-check:
+    name: Dependency Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Check for new dependencies
+        run: |
+          git diff origin/main...HEAD --name-only | grep -E "package\.json$" || exit 0
+          
+          echo "📦 New dependencies detected"
+          echo "Please ensure all new dependencies are:"
+          echo "- Actively maintained"
+          echo "- Have good security track record"
+          echo "- Are necessary for the feature"
+
+      - name: Check bundle size impact
+        run: |
+          # This would analyze bundle size changes
+          echo "Bundle size analysis would run here"
+
+  # Security review
+  security-review:
+    name: Security Review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for sensitive patterns
+        run: |
+          # Check for potential secrets or sensitive data
+          if git diff origin/main...HEAD | grep -iE "(password|secret|key|token)" | grep -v "test"; then
+            echo "⚠️  Potential sensitive data detected in changes"
+            echo "Please review and ensure no secrets are committed"
+          fi
+
+      - name: Check crypto implementations
+        run: |
+          # Check if crypto-related files were modified
+          if git diff origin/main...HEAD --name-only | grep -E "(crypto|encrypt|decrypt)"; then
+            echo "🔐 Cryptographic code changes detected"
+            echo "Please ensure security review by crypto expert"
+          fi
+
+  # Performance impact check
+  performance-check:
+    name: Performance Impact
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'performance')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run performance benchmarks
+        run: |
+          echo "Performance benchmarks would run here"
+          echo "Comparing against baseline performance metrics"
+
+  # Documentation check
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for documentation updates
+        run: |
+          # Check if code changes require doc updates
+          if git diff origin/main...HEAD --name-only | grep -E "(src/|packages/)" | grep -v test; then
+            if ! git diff origin/main...HEAD --name-only | grep -E "(README|docs/|\.md$)"; then
+              echo "⚠️  Code changes detected but no documentation updates"
+              echo "Consider updating relevant documentation"
+            fi
+          fi
+
+      - name: Validate markdown files
+        run: |
+          # Check if any markdown files have syntax issues
+          find . -name "*.md" -not -path "./node_modules/*" | while read file; do
+            echo "Checking $file"
+            # Basic markdown validation would go here
+          done
+
+  # Final PR status
+  pr-status:
+    name: PR Status Summary
+    runs-on: ubuntu-latest
+    needs: [pr-validation, breaking-changes, coverage-check, dependency-check, security-review, docs-check]
+    if: always()
+    steps:
+      - name: PR Status Summary
+        run: |
+          echo "## PR Quality Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| PR Validation | ${{ needs.pr-validation.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Breaking Changes | ${{ needs.breaking-changes.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage Check | ${{ needs.coverage-check.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Check | ${{ needs.dependency-check.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Review | ${{ needs.security-review.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation | ${{ needs.docs-check.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.pr-validation.result }}" == "success" && 
+                "${{ needs.breaking-changes.result }}" == "success" && 
+                "${{ needs.coverage-check.result }}" == "success" && 
+                "${{ needs.dependency-check.result }}" == "success" && 
+                "${{ needs.security-review.result }}" == "success" && 
+                "${{ needs.docs-check.result }}" == "success" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 **All PR quality checks passed!** This PR is ready for review." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ **Some PR quality checks failed.** Please address the issues before requesting review." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

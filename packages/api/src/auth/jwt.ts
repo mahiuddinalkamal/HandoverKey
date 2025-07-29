@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
 export interface JWTPayload {
   userId: string;
@@ -10,20 +10,23 @@ export interface JWTPayload {
 }
 
 export class JWTManager {
-  private static readonly JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-  private static readonly ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-  private static readonly REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+  private static readonly JWT_SECRET =
+    process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
+  private static readonly ACCESS_TOKEN_EXPIRES_IN =
+    process.env.JWT_EXPIRES_IN || "24h";
+  private static readonly REFRESH_TOKEN_EXPIRES_IN =
+    process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
   static generateAccessToken(userId: string, email: string): string {
     const sessionId = uuidv4();
     const payload: JWTPayload = {
       userId,
       email,
-      sessionId
+      sessionId,
     };
 
     return jwt.sign(payload, this.JWT_SECRET, {
-      expiresIn: this.ACCESS_TOKEN_EXPIRES_IN
+      expiresIn: this.ACCESS_TOKEN_EXPIRES_IN,
     } as jwt.SignOptions);
   }
 
@@ -32,11 +35,11 @@ export class JWTManager {
     const payload: JWTPayload = {
       userId,
       email,
-      sessionId
+      sessionId,
     };
 
     return jwt.sign(payload, this.JWT_SECRET, {
-      expiresIn: this.REFRESH_TOKEN_EXPIRES_IN
+      expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
     } as jwt.SignOptions);
   }
 
@@ -44,21 +47,21 @@ export class JWTManager {
     try {
       const decoded = jwt.verify(token, this.JWT_SECRET) as JWTPayload;
       return decoded;
-    } catch (error) {
-      throw new Error('Invalid or expired token');
+    } catch {
+      throw new Error("Invalid or expired token");
     }
   }
 
   static decodeToken(token: string): JWTPayload | null {
     try {
       return jwt.decode(token) as JWTPayload;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
 
   static extractTokenFromHeader(authHeader: string): string | null {
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return null;
     }
     return authHeader.substring(7);
@@ -71,7 +74,7 @@ export class JWTManager {
         return new Date(decoded.exp * 1000);
       }
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -83,4 +86,4 @@ export class JWTManager {
     }
     return expiration < new Date();
   }
-} 
+}

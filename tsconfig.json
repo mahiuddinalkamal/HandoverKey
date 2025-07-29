@@ -22,14 +22,6 @@
       "@handoverkey/database": ["packages/database/src"]
     }
   },
-  "include": [
-    "apps/**/*",
-    "packages/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "coverage"
-  ]
-} 
+  "include": ["apps/**/*", "packages/**/*"],
+  "exclude": ["node_modules", "dist", "build", "coverage"]
+}

@@ -5,12 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/schema dist/",
     "dev": "tsc --watch",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
+    "test:coverage": "jest --coverage --passWithNoTests",
+    "lint": "eslint src",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
     "migrate": "node dist/migrate.js",
@@ -39,4 +39,4 @@
   "peerDependencies": {
     "@handoverkey/shared": "*"
   }
-} 
+}

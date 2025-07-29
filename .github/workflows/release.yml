@@ -1,0 +1,348 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Validate release
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          if [[ "$VERSION" =~ -[a-zA-Z] ]]; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "Release version: $VERSION"
+          echo "Is prerelease: ${{ steps.version.outputs.is-prerelease }}"
+
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ steps.version.outputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "Invalid version format: ${{ steps.version.outputs.version }}"
+            echo "Expected format: v1.0.0 or v1.0.0-beta.1"
+            exit 1
+          fi
+
+  # Run full test suite
+  test-release:
+    name: Release Tests
+    runs-on: ubuntu-latest
+    needs: [validate-release]
+    strategy:
+      matrix:
+        node-version: ['22']
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: handoverkey_release
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full test suite
+        run: |
+          npm run build
+          npm run test
+          npm run test:integration
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: handoverkey_release
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_SECRET: release-test-secret
+          NODE_ENV: test
+
+  # Build and push Docker images
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release]
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      api-image: ${{ steps.meta-api.outputs.tags }}
+      web-image: ${{ steps.meta-web.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract API metadata
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Extract Web metadata
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: packages/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # Security scan of release images
+  security-scan-release:
+    name: Security Scan Release
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    steps:
+      - name: Run Trivy vulnerability scanner on API
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-images.outputs.api-image }}
+          format: 'sarif'
+          output: 'trivy-api-results.sarif'
+
+      - name: Run Trivy vulnerability scanner on Web
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-images.outputs.web-image }}
+          format: 'sarif'
+          output: 'trivy-web-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-api-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-web-results.sarif'
+
+  # Generate release notes
+  generate-changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    needs: [validate-release]
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          CURRENT_TAG="${{ needs.validate-release.outputs.version }}"
+          
+          echo "Generating changelog from $PREVIOUS_TAG to $CURRENT_TAG"
+          
+          # Generate changelog
+          CHANGELOG="## What's Changed\n\n"
+          
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            # Get commits since last tag
+            COMMITS=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
+          else
+            # Get all commits if no previous tag
+            COMMITS=$(git log --pretty=format:"- %s (%h)")
+          fi
+          
+          # Categorize commits
+          FEATURES=$(echo "$COMMITS" | grep -E "^- feat" || true)
+          FIXES=$(echo "$COMMITS" | grep -E "^- fix" || true)
+          OTHERS=$(echo "$COMMITS" | grep -vE "^- (feat|fix)" || true)
+          
+          if [[ -n "$FEATURES" ]]; then
+            CHANGELOG+="\n### 🚀 Features\n$FEATURES\n"
+          fi
+          
+          if [[ -n "$FIXES" ]]; then
+            CHANGELOG+="\n### 🐛 Bug Fixes\n$FIXES\n"
+          fi
+          
+          if [[ -n "$OTHERS" ]]; then
+            CHANGELOG+="\n### 🔧 Other Changes\n$OTHERS\n"
+          fi
+          
+          # Save changelog to output
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+  # Create GitHub release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, test-release, build-images, security-scan-release, generate-changelog]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.validate-release.outputs.version }}
+          release_name: Release ${{ needs.validate-release.outputs.version }}
+          body: |
+            ${{ needs.generate-changelog.outputs.changelog }}
+            
+            ## Docker Images
+            
+            - API: `${{ needs.build-images.outputs.api-image }}`
+            - Web: `${{ needs.build-images.outputs.web-image }}`
+            
+            ## Installation
+            
+            ```bash
+            docker pull ${{ needs.build-images.outputs.api-image }}
+            docker pull ${{ needs.build-images.outputs.web-image }}
+            ```
+            
+            ## Verification
+            
+            All images have been scanned for security vulnerabilities and passed comprehensive testing.
+          draft: false
+          prerelease: ${{ needs.validate-release.outputs.is-prerelease == 'true' }}
+
+  # Deploy to staging (for pre-releases) or production
+  deploy:
+    name: Deploy Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    if: needs.validate-release.outputs.is-prerelease == 'false'
+    environment: production
+    steps:
+      - name: Deploy to Production
+        run: |
+          echo "🚀 Deploying ${{ needs.validate-release.outputs.version }} to production"
+          echo "This would trigger the production deployment pipeline"
+          # Actual deployment logic would go here
+
+  # Notify stakeholders
+  notify-release:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [validate-release, create-release]
+    if: always()
+    steps:
+      - name: Notify Success
+        if: needs.create-release.result == 'success'
+        run: |
+          echo "🎉 Release ${{ needs.validate-release.outputs.version }} completed successfully!"
+          echo "📦 Docker images published"
+          echo "📝 Release notes generated"
+          echo "🚀 Ready for deployment"
+
+      - name: Notify Failure
+        if: needs.create-release.result == 'failure'
+        run: |
+          echo "❌ Release ${{ needs.validate-release.outputs.version }} failed!"
+          echo "Please check the workflow logs and fix any issues"
+          exit 1

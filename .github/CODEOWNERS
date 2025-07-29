@@ -1,0 +1,39 @@
+# Code Owners for HandoverKey
+
+# Global owners - these users/teams will be requested for review on all PRs
+* @mahiuddinalkamal
+
+# Security-critical files require additional security review
+packages/core/src/crypto/ @mahiuddinalkamal
+packages/api/src/auth/ @mahiuddinalkamal
+packages/api/src/middleware/security.ts @mahiuddinalkamal
+packages/shared/src/types/crypto.ts @mahiuddinalkamal
+
+# Database changes require careful review
+packages/database/ @mahiuddinalkamal
+packages/database/src/schema/ @mahiuddinalkamal
+
+# API changes that affect public contracts
+packages/api/src/routes/ @mahiuddinalkamal
+packages/api/src/controllers/ @mahiuddinalkamal
+packages/shared/src/types/api.ts @mahiuddinalkamal
+
+# Infrastructure and deployment files
+.github/workflows/ @mahiuddinalkamal
+docker-compose.yml @mahiuddinalkamal
+**/Dockerfile @mahiuddinalkamal
+scripts/ @mahiuddinalkamal
+
+# Configuration files that affect security or deployment
+.env* @mahiuddinalkamal
+package.json @mahiuddinalkamal
+turbo.json @mahiuddinalkamal
+
+# Documentation that affects security or architecture
+docs/security.md @mahiuddinalkamal
+docs/architecture.md @mahiuddinalkamal
+docs/api.md @mahiuddinalkamal
+
+# Core business logic
+packages/core/src/ @mahiuddinalkamal
+packages/api/src/services/ @mahiuddinalkamal
