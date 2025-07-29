@@ -14,8 +14,8 @@ COPY packages/shared/package*.json ./packages/shared/
 COPY packages/core/package*.json ./packages/core/
 COPY packages/database/package*.json ./packages/database/
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install dependencies (production only)
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Build stage
 FROM base AS builder
@@ -52,21 +52,22 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 handoverkey
 
+# Copy production dependencies (hoisted to root in monorepo)
+COPY --from=deps --chown=handoverkey:nodejs /app/node_modules ./node_modules
+
 # Copy built application
 COPY --from=builder --chown=handoverkey:nodejs /app/packages/api/dist ./dist
+
+# Copy built internal packages to their expected locations in node_modules
 COPY --from=builder --chown=handoverkey:nodejs /app/packages/shared/dist ./node_modules/@handoverkey/shared/dist
+COPY --from=builder --chown=handoverkey:nodejs /app/packages/shared/package.json ./node_modules/@handoverkey/shared/package.json
 COPY --from=builder --chown=handoverkey:nodejs /app/packages/core/dist ./node_modules/@handoverkey/core/dist
+COPY --from=builder --chown=handoverkey:nodejs /app/packages/core/package.json ./node_modules/@handoverkey/core/package.json
 COPY --from=builder --chown=handoverkey:nodejs /app/packages/database/dist ./node_modules/@handoverkey/database/dist
+COPY --from=builder --chown=handoverkey:nodejs /app/packages/database/package.json ./node_modules/@handoverkey/database/package.json
 
-# Copy production dependencies
-COPY --from=deps --chown=handoverkey:nodejs /app/node_modules ./node_modules
-COPY --from=deps --chown=handoverkey:nodejs /app/packages/api/node_modules ./packages/api/node_modules
-
-# Copy package.json files for runtime
+# Copy package.json for runtime
 COPY --chown=handoverkey:nodejs packages/api/package*.json ./
-COPY --chown=handoverkey:nodejs packages/shared/package*.json ./packages/shared/
-COPY --chown=handoverkey:nodejs packages/core/package*.json ./packages/core/
-COPY --chown=handoverkey:nodejs packages/database/package*.json ./packages/database/
 
 USER handoverkey
 
