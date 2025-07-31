@@ -81,7 +81,7 @@ app.use("*", (req, res) => {
 // Error handling middleware
 app.use(
   (
-    error: any,
+    error: Error & { type?: string },
     req: express.Request,
     res: express.Response,
     _next: express.NextFunction,

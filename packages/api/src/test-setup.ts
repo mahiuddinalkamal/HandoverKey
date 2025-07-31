@@ -1,5 +1,3 @@
-import { DatabaseConnection } from "@handoverkey/database";
-
 // Mock the database connection for tests
 jest.mock("@handoverkey/database", () => ({
   DatabaseConnection: {
@@ -21,7 +19,12 @@ jest.mock("./services/job-manager", () => ({
         jobs: {
           inactivityMonitor: {
             isHealthy: true,
-            stats: { isRunning: false, checkInterval: 900000, activeUsers: 0, systemStatus: 'operational' },
+            stats: { 
+              isRunning: false, 
+              checkInterval: 900000, 
+              activeUsers: 0, 
+              systemStatus: 'operational' 
+            },
           },
         },
       }),
