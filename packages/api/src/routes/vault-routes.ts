@@ -1,12 +1,16 @@
 import { Router } from "express";
 import { VaultController } from "../controllers/vault-controller";
 import { authenticateJWT, requireAuth } from "../middleware/auth";
+import { ActivityMiddleware } from "../middleware/activity-middleware";
 
 const router = Router();
 
 // All vault routes require authentication
 router.use(authenticateJWT);
 router.use(requireAuth);
+
+// Track vault access for all routes
+router.use(ActivityMiddleware.trackVaultAccess());
 
 // Create vault entry
 router.post(

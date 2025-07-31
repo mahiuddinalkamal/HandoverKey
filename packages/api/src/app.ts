@@ -11,6 +11,7 @@ import {
 } from "./middleware/security";
 import authRoutes from "./routes/auth-routes";
 import vaultRoutes from "./routes/vault-routes";
+import activityRoutes from "./routes/activity-routes";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/vault", vaultRoutes);
+app.use("/api/v1/activity", activityRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {
