@@ -11,13 +11,13 @@ router.use(authenticateJWT);
  * POST /api/v1/activity/check-in
  * Manual check-in to reset inactivity timer
  */
-router.post('/check-in', ActivityMiddleware.handleManualCheckIn);
+router.post("/check-in", ActivityMiddleware.handleManualCheckIn);
 
 /**
  * GET /api/v1/activity/status
  * Get current activity status and handover information
  */
-router.get('/status', ActivityMiddleware.getActivityStatus);
+router.get("/status", ActivityMiddleware.getActivityStatus);
 
 /**
  * GET /api/v1/activity/history
@@ -29,6 +29,6 @@ router.get('/status', ActivityMiddleware.getActivityStatus);
  * - endDate: filter activities before this date
  * - activityTypes: comma-separated list of activity types to filter
  */
-router.get('/history', ActivityMiddleware.getActivityHistory);
+router.get("/history", ActivityMiddleware.getActivityHistory);
 
 export default router;

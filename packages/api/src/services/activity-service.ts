@@ -10,7 +10,8 @@ import {
 } from "@handoverkey/shared";
 
 export class ActivityService implements ActivityTracker {
-  private static readonly HMAC_SECRET = process.env.ACTIVITY_HMAC_SECRET || "default-secret-change-in-production";
+  private static readonly HMAC_SECRET =
+    process.env.ACTIVITY_HMAC_SECRET || "default-secret-change-in-production";
   private static readonly SIGNATURE_ALGORITHM = "sha256";
 
   /**
@@ -22,10 +23,10 @@ export class ActivityService implements ActivityTracker {
     metadata?: Record<string, unknown>,
     clientType: ClientType = ClientType.WEB,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<void> {
     const timestamp = new Date();
-    
+
     // Create activity data for signature
     const activityData = {
       userId,
@@ -74,7 +75,7 @@ export class ActivityService implements ActivityTracker {
     `;
 
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
@@ -95,26 +96,26 @@ export class ActivityService implements ActivityTracker {
       // User has never been active - use account creation date
       const user = await this.getUserById(userId);
       const createdAt = user?.createdAt || new Date();
-      
+
       return {
         lastActivity: createdAt,
         inactivityDuration: Date.now() - createdAt.getTime(),
         thresholdPercentage: this.calculateThresholdPercentage(
           Date.now() - createdAt.getTime(),
-          inactivitySettings.thresholdDays
+          inactivitySettings.thresholdDays,
         ),
         nextReminderDue: this.calculateNextReminderDue(
           createdAt,
-          inactivitySettings.thresholdDays
+          inactivitySettings.thresholdDays,
         ),
         handoverStatus: this.determineHandoverStatus(
           Date.now() - createdAt.getTime(),
           inactivitySettings.thresholdDays,
-          activeHandover
+          activeHandover,
         ),
         timeRemaining: this.calculateTimeRemaining(
           createdAt,
-          inactivitySettings.thresholdDays
+          inactivitySettings.thresholdDays,
         ),
       };
     }
@@ -122,7 +123,7 @@ export class ActivityService implements ActivityTracker {
     const inactivityDuration = Date.now() - lastActivity.createdAt.getTime();
     const thresholdPercentage = this.calculateThresholdPercentage(
       inactivityDuration,
-      inactivitySettings.thresholdDays
+      inactivitySettings.thresholdDays,
     );
 
     return {
@@ -131,16 +132,16 @@ export class ActivityService implements ActivityTracker {
       thresholdPercentage,
       nextReminderDue: this.calculateNextReminderDue(
         lastActivity.createdAt,
-        inactivitySettings.thresholdDays
+        inactivitySettings.thresholdDays,
       ),
       handoverStatus: this.determineHandoverStatus(
         inactivityDuration,
         inactivitySettings.thresholdDays,
-        activeHandover
+        activeHandover,
       ),
       timeRemaining: this.calculateTimeRemaining(
         lastActivity.createdAt,
-        inactivitySettings.thresholdDays
+        inactivitySettings.thresholdDays,
       ),
     };
   }
@@ -148,7 +149,11 @@ export class ActivityService implements ActivityTracker {
   /**
    * Pauses activity tracking for a user
    */
-  async pauseTracking(userId: string, reason: string, until?: Date): Promise<void> {
+  async pauseTracking(
+    userId: string,
+    reason: string,
+    until?: Date,
+  ): Promise<void> {
     const query = `
       UPDATE inactivity_settings 
       SET is_paused = true, pause_reason = $2, paused_until = $3, updated_at = NOW()
@@ -158,11 +163,11 @@ export class ActivityService implements ActivityTracker {
     await DatabaseConnection.query(query, [userId, reason, until]);
 
     // Record the pause as an activity
-    await this.recordActivity(
-      userId,
-      ActivityType.SETTINGS_CHANGE,
-      { action: "pause_tracking", reason, until }
-    );
+    await this.recordActivity(userId, ActivityType.SETTINGS_CHANGE, {
+      action: "pause_tracking",
+      reason,
+      until,
+    });
   }
 
   /**
@@ -178,17 +183,17 @@ export class ActivityService implements ActivityTracker {
     await DatabaseConnection.query(query, [userId]);
 
     // Record the resume as an activity
-    await this.recordActivity(
-      userId,
-      ActivityType.SETTINGS_CHANGE,
-      { action: "resume_tracking" }
-    );
+    await this.recordActivity(userId, ActivityType.SETTINGS_CHANGE, {
+      action: "resume_tracking",
+    });
   }
 
   /**
    * Verifies the integrity of an activity record
    */
-  async verifyActivityIntegrity(activityRecord: ActivityRecord): Promise<boolean> {
+  async verifyActivityIntegrity(
+    activityRecord: ActivityRecord,
+  ): Promise<boolean> {
     const activityData = {
       userId: activityRecord.userId,
       activityType: activityRecord.activityType,
@@ -210,7 +215,7 @@ export class ActivityService implements ActivityTracker {
     offset: number = 0,
     startDate?: Date,
     endDate?: Date,
-    activityTypes?: ActivityType[]
+    activityTypes?: ActivityType[],
   ): Promise<{ activities: ActivityRecord[]; total: number }> {
     let whereClause = "WHERE user_id = $1";
     const params: unknown[] = [userId];
@@ -249,7 +254,9 @@ export class ActivityService implements ActivityTracker {
     params.push(limit, offset);
 
     const result = await DatabaseConnection.query(query, params);
-    const activities = result.rows.map((row: unknown) => this.mapRowToActivityRecord(row));
+    const activities = result.rows.map((row: unknown) =>
+      this.mapRowToActivityRecord(row),
+    );
 
     return { activities, total };
   }
@@ -257,11 +264,19 @@ export class ActivityService implements ActivityTracker {
   /**
    * Private helper methods
    */
-  private generateActivitySignature(activityData: Record<string, unknown>): string {
-    const dataString = JSON.stringify(activityData, Object.keys(activityData).sort());
-    return createHmac(ActivityService.SIGNATURE_ALGORITHM, ActivityService.HMAC_SECRET)
+  private generateActivitySignature(
+    activityData: Record<string, unknown>,
+  ): string {
+    const dataString = JSON.stringify(
+      activityData,
+      Object.keys(activityData).sort(),
+    );
+    return createHmac(
+      ActivityService.SIGNATURE_ALGORITHM,
+      ActivityService.HMAC_SECRET,
+    )
       .update(dataString)
-      .digest('hex');
+      .digest("hex");
   }
 
   private async updateUserLastLogin(userId: string): Promise<void> {
@@ -272,7 +287,7 @@ export class ActivityService implements ActivityTracker {
   private async getInactivitySettings(userId: string) {
     const query = "SELECT * FROM inactivity_settings WHERE user_id = $1";
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       // Return default settings if none exist
       return {
@@ -302,54 +317,62 @@ export class ActivityService implements ActivityTracker {
   private async getUserById(userId: string) {
     const query = "SELECT * FROM users WHERE id = $1";
     const result = await DatabaseConnection.query(query, [userId]);
-    return result.rows.length > 0 ? {
-      id: result.rows[0].id,
-      createdAt: result.rows[0].created_at,
-    } : null;
+    return result.rows.length > 0
+      ? {
+          id: result.rows[0].id,
+          createdAt: result.rows[0].created_at,
+        }
+      : null;
   }
 
-  private calculateThresholdPercentage(inactivityDuration: number, thresholdDays: number): number {
+  private calculateThresholdPercentage(
+    inactivityDuration: number,
+    thresholdDays: number,
+  ): number {
     const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
     return Math.min((inactivityDuration / thresholdMs) * 100, 100);
   }
 
-  private calculateNextReminderDue(lastActivity: Date, thresholdDays: number): Date | null {
+  private calculateNextReminderDue(
+    lastActivity: Date,
+    thresholdDays: number,
+  ): Date | null {
     const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
     const firstReminderThreshold = thresholdMs * 0.75; // 75%
-    
+
     const timeSinceActivity = Date.now() - lastActivity.getTime();
-    
+
     if (timeSinceActivity < firstReminderThreshold) {
       return new Date(lastActivity.getTime() + firstReminderThreshold);
     }
-    
+
     // If we're past 75%, calculate next reminder based on current percentage
     const percentage = (timeSinceActivity / thresholdMs) * 100;
-    
+
     if (percentage < 85) {
-      return new Date(lastActivity.getTime() + (thresholdMs * 0.85));
+      return new Date(lastActivity.getTime() + thresholdMs * 0.85);
     } else if (percentage < 95) {
-      return new Date(lastActivity.getTime() + (thresholdMs * 0.95));
+      return new Date(lastActivity.getTime() + thresholdMs * 0.95);
     } else if (percentage < 100) {
       return new Date(lastActivity.getTime() + thresholdMs);
     }
-    
+
     return null; // Past threshold, no more reminders
   }
 
   private determineHandoverStatus(
     inactivityDuration: number,
     thresholdDays: number,
-    activeHandover: unknown
+    activeHandover: unknown,
   ): HandoverStatus {
     if (activeHandover) {
       const handover = activeHandover as { status: string };
       switch (handover.status) {
-        case 'grace_period':
+        case "grace_period":
           return HandoverStatus.GRACE_PERIOD;
-        case 'awaiting_successors':
-        case 'verification_pending':
-        case 'ready_for_transfer':
+        case "awaiting_successors":
+        case "verification_pending":
+        case "ready_for_transfer":
           return HandoverStatus.HANDOVER_ACTIVE;
         default:
           break;
@@ -368,7 +391,10 @@ export class ActivityService implements ActivityTracker {
     return HandoverStatus.NORMAL;
   }
 
-  private calculateTimeRemaining(lastActivity: Date, thresholdDays: number): number {
+  private calculateTimeRemaining(
+    lastActivity: Date,
+    thresholdDays: number,
+  ): number {
     const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
     const elapsed = Date.now() - lastActivity.getTime();
     return Math.max(0, thresholdMs - elapsed);

@@ -30,6 +30,12 @@ router.post("/logout", authenticateJWT, requireAuth, AuthController.logout);
 router.post("/refresh", authRateLimiter, AuthController.refreshToken);
 
 // Get user profile (requires authentication)
-router.get("/profile", authenticateJWT, requireAuth, ActivityMiddleware.trackActivity(), AuthController.getProfile);
+router.get(
+  "/profile",
+  authenticateJWT,
+  requireAuth,
+  ActivityMiddleware.trackActivity(),
+  AuthController.getProfile,
+);
 
 export default router;

@@ -21,7 +21,10 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       }
 
       const now = new Date();
-      const gracePeriodEnds = new Date(now.getTime() + (HandoverOrchestrator.GRACE_PERIOD_HOURS * 60 * 60 * 1000));
+      const gracePeriodEnds = new Date(
+        now.getTime() +
+          HandoverOrchestrator.GRACE_PERIOD_HOURS * 60 * 60 * 1000,
+      );
 
       // Create new handover process
       const query = `
@@ -34,8 +37,8 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
 
       const metadata = {
         gracePeriodHours: HandoverOrchestrator.GRACE_PERIOD_HOURS,
-        initiatedBy: 'inactivity_monitor',
-        reason: 'inactivity_threshold_exceeded',
+        initiatedBy: "inactivity_monitor",
+        reason: "inactivity_threshold_exceeded",
       };
 
       const result = await DatabaseConnection.query(query, [
@@ -50,7 +53,9 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
 
       const handoverProcess = this.mapRowToHandoverProcess(result.rows[0]);
 
-      console.log(`Handover process initiated for user ${userId}, grace period ends: ${gracePeriodEnds.toISOString()}`);
+      console.log(
+        `Handover process initiated for user ${userId}, grace period ends: ${gracePeriodEnds.toISOString()}`,
+      );
 
       // TODO: Send initial grace period notifications
       // TODO: Schedule grace period monitoring
@@ -68,7 +73,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
   async cancelHandover(userId: string, reason: string): Promise<void> {
     try {
       const now = new Date();
-      
+
       const query = `
         UPDATE handover_processes 
         SET status = $1, cancelled_at = $2, cancellation_reason = $3, updated_at = $4
@@ -103,13 +108,15 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
   async processSuccessorResponse(
     handoverId: string,
     successorId: string,
-    _response: unknown
+    _response: unknown,
   ): Promise<void> {
     try {
       // TODO: Implement successor response processing
       // This will handle successor verification and consent
-      console.log(`Processing successor response for handover ${handoverId}, successor ${successorId}`);
-      
+      console.log(
+        `Processing successor response for handover ${handoverId}, successor ${successorId}`,
+      );
+
       // Placeholder implementation
       const query = `
         UPDATE successor_notifications 
@@ -119,7 +126,10 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
 
       await DatabaseConnection.query(query, [handoverId, successorId]);
     } catch (error) {
-      console.error(`Failed to process successor response for handover ${handoverId}:`, error);
+      console.error(
+        `Failed to process successor response for handover ${handoverId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -155,16 +165,23 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       ]);
 
       if (result.rowCount === 0) {
-        console.log(`Handover ${handoverId} is not in grace period or doesn't exist`);
+        console.log(
+          `Handover ${handoverId} is not in grace period or doesn't exist`,
+        );
         return;
       }
 
-      console.log(`Grace period expired for handover ${handoverId}, notifying successors`);
+      console.log(
+        `Grace period expired for handover ${handoverId}, notifying successors`,
+      );
 
       // TODO: Notify successors
       // TODO: Begin successor verification process
     } catch (error) {
-      console.error(`Failed to process grace period expiration for handover ${handoverId}:`, error);
+      console.error(
+        `Failed to process grace period expiration for handover ${handoverId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -185,9 +202,11 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       `;
 
       const result = await DatabaseConnection.query(query);
-      return result.rows.map((row: unknown) => this.mapRowToHandoverProcess(row));
+      return result.rows.map((row: unknown) =>
+        this.mapRowToHandoverProcess(row),
+      );
     } catch (error) {
-      console.error('Failed to get handovers needing attention:', error);
+      console.error("Failed to get handovers needing attention:", error);
       return [];
     }
   }
@@ -195,7 +214,9 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
   /**
    * Private helper methods
    */
-  private async getActiveHandover(userId: string): Promise<HandoverProcess | null> {
+  private async getActiveHandover(
+    userId: string,
+  ): Promise<HandoverProcess | null> {
     const query = `
       SELECT * FROM handover_processes 
       WHERE user_id = $1 AND status NOT IN ('completed', 'cancelled')
@@ -204,7 +225,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
     `;
 
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }

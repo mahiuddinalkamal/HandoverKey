@@ -21,17 +21,17 @@ export class JobManager {
    */
   start(): void {
     if (this.isStarted) {
-      console.log('JobManager is already started');
+      console.log("JobManager is already started");
       return;
     }
 
-    console.log('Starting JobManager...');
-    
+    console.log("Starting JobManager...");
+
     // Start the inactivity monitor
     this.inactivityMonitor.start();
-    
+
     this.isStarted = true;
-    console.log('JobManager started successfully');
+    console.log("JobManager started successfully");
   }
 
   /**
@@ -39,17 +39,17 @@ export class JobManager {
    */
   stop(): void {
     if (!this.isStarted) {
-      console.log('JobManager is not started');
+      console.log("JobManager is not started");
       return;
     }
 
-    console.log('Stopping JobManager...');
-    
+    console.log("Stopping JobManager...");
+
     // Stop the inactivity monitor
     this.inactivityMonitor.stop();
-    
+
     this.isStarted = false;
-    console.log('JobManager stopped successfully');
+    console.log("JobManager stopped successfully");
   }
 
   /**
@@ -82,7 +82,7 @@ export class JobManager {
    * Manually trigger inactivity check for all users
    */
   async triggerInactivityCheck(): Promise<void> {
-    console.log('Manually triggering inactivity check...');
+    console.log("Manually triggering inactivity check...");
     await this.inactivityMonitor.checkAllUsers();
   }
 

@@ -37,26 +37,28 @@ export class InactivityMonitorService implements InactivityMonitor {
    */
   start(): void {
     if (this.isRunning) {
-      console.log('InactivityMonitor is already running');
+      console.log("InactivityMonitor is already running");
       return;
     }
 
-    console.log('Starting InactivityMonitor service...');
+    console.log("Starting InactivityMonitor service...");
     this.isRunning = true;
 
     // Run initial check
-    this.checkAllUsers().catch(error => {
-      console.error('Initial inactivity check failed:', error);
+    this.checkAllUsers().catch((error) => {
+      console.error("Initial inactivity check failed:", error);
     });
 
     // Schedule periodic checks
     this.intervalId = global.setInterval(() => {
-      this.checkAllUsers().catch(error => {
-        console.error('Periodic inactivity check failed:', error);
+      this.checkAllUsers().catch((error) => {
+        console.error("Periodic inactivity check failed:", error);
       });
     }, this.CHECK_INTERVAL_MS);
 
-    console.log(`InactivityMonitor started with ${this.CHECK_INTERVAL_MS / 1000}s interval`);
+    console.log(
+      `InactivityMonitor started with ${this.CHECK_INTERVAL_MS / 1000}s interval`,
+    );
   }
 
   /**
@@ -64,11 +66,11 @@ export class InactivityMonitorService implements InactivityMonitor {
    */
   stop(): void {
     if (!this.isRunning) {
-      console.log('InactivityMonitor is not running');
+      console.log("InactivityMonitor is not running");
       return;
     }
 
-    console.log('Stopping InactivityMonitor service...');
+    console.log("Stopping InactivityMonitor service...");
     this.isRunning = false;
 
     if (this.intervalId) {
@@ -76,7 +78,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       this.intervalId = null;
     }
 
-    console.log('InactivityMonitor stopped');
+    console.log("InactivityMonitor stopped");
   }
 
   /**
@@ -94,13 +96,18 @@ export class InactivityMonitorService implements InactivityMonitor {
         return;
       }
 
-      const activityStatus = await this.activityService.getUserActivityStatus(userId);
+      const activityStatus =
+        await this.activityService.getUserActivityStatus(userId);
       const inactivitySettings = await this.getInactivitySettings(userId);
 
       // Adjust for system downtime
       const adjustedStatus = await this.adjustForSystemDowntime(activityStatus);
 
-      await this.processUserInactivity(userId, adjustedStatus, inactivitySettings);
+      await this.processUserInactivity(
+        userId,
+        adjustedStatus,
+        inactivitySettings,
+      );
     } catch (error) {
       console.error(`Failed to check inactivity for user ${userId}:`, error);
       // Continue processing other users even if one fails
@@ -112,7 +119,7 @@ export class InactivityMonitorService implements InactivityMonitor {
    */
   async checkAllUsers(): Promise<void> {
     try {
-      console.log('Running inactivity check for all users...');
+      console.log("Running inactivity check for all users...");
 
       // Get all active users (users with inactivity settings)
       const users = await this.getActiveUsers();
@@ -122,9 +129,9 @@ export class InactivityMonitorService implements InactivityMonitor {
       const batchSize = 50;
       for (let i = 0; i < users.length; i += batchSize) {
         const batch = users.slice(i, i + batchSize);
-        
+
         await Promise.allSettled(
-          batch.map(user => this.checkUserInactivity(user.id))
+          batch.map((user) => this.checkUserInactivity(user.id)),
         );
 
         // Small delay between batches
@@ -133,9 +140,9 @@ export class InactivityMonitorService implements InactivityMonitor {
         }
       }
 
-      console.log('Completed inactivity check for all users');
+      console.log("Completed inactivity check for all users");
     } catch (error) {
-      console.error('Failed to check inactivity for all users:', error);
+      console.error("Failed to check inactivity for all users:", error);
     }
   }
 
@@ -147,7 +154,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       await this.updateSystemStatus(SystemStatusType.MAINTENANCE, reason);
       console.log(`System tracking paused: ${reason}`);
     } catch (error) {
-      console.error('Failed to pause system tracking:', error);
+      console.error("Failed to pause system tracking:", error);
       throw error;
     }
   }
@@ -157,10 +164,13 @@ export class InactivityMonitorService implements InactivityMonitor {
    */
   async resumeSystemTracking(): Promise<void> {
     try {
-      await this.updateSystemStatus(SystemStatusType.OPERATIONAL, 'System resumed');
-      console.log('System tracking resumed');
+      await this.updateSystemStatus(
+        SystemStatusType.OPERATIONAL,
+        "System resumed",
+      );
+      console.log("System tracking resumed");
     } catch (error) {
-      console.error('Failed to resume system tracking:', error);
+      console.error("Failed to resume system tracking:", error);
       throw error;
     }
   }
@@ -171,58 +181,92 @@ export class InactivityMonitorService implements InactivityMonitor {
   private async processUserInactivity(
     userId: string,
     activityStatus: ActivityStatus,
-    _inactivitySettings: { thresholdDays: number; notificationMethods: string[] }
+    _inactivitySettings: {
+      thresholdDays: number;
+      notificationMethods: string[];
+    },
   ): Promise<void> {
     const { thresholdPercentage, handoverStatus } = activityStatus;
 
     // Handle different inactivity levels
     if (thresholdPercentage >= 100) {
       // Past threshold - initiate handover if not already started
-      if (handoverStatus !== HandoverStatus.GRACE_PERIOD && handoverStatus !== HandoverStatus.HANDOVER_ACTIVE) {
+      if (
+        handoverStatus !== HandoverStatus.GRACE_PERIOD &&
+        handoverStatus !== HandoverStatus.HANDOVER_ACTIVE
+      ) {
         await this.handoverOrchestrator.initiateHandover(userId);
-        console.log(`Handover initiated for user ${userId} (${thresholdPercentage.toFixed(1)}% inactive)`);
+        console.log(
+          `Handover initiated for user ${userId} (${thresholdPercentage.toFixed(1)}% inactive)`,
+        );
       }
     } else if (thresholdPercentage >= 95) {
       // Final warning (95%)
-      await this.sendReminderIfDue(userId, ReminderType.FINAL_WARNING, activityStatus);
+      await this.sendReminderIfDue(
+        userId,
+        ReminderType.FINAL_WARNING,
+        activityStatus,
+      );
     } else if (thresholdPercentage >= 85) {
       // Second reminder (85%)
-      await this.sendReminderIfDue(userId, ReminderType.SECOND_REMINDER, activityStatus);
+      await this.sendReminderIfDue(
+        userId,
+        ReminderType.SECOND_REMINDER,
+        activityStatus,
+      );
     } else if (thresholdPercentage >= 75) {
       // First reminder (75%)
-      await this.sendReminderIfDue(userId, ReminderType.FIRST_REMINDER, activityStatus);
+      await this.sendReminderIfDue(
+        userId,
+        ReminderType.FIRST_REMINDER,
+        activityStatus,
+      );
     }
 
     // Log significant changes
     if (thresholdPercentage >= 75) {
-      console.log(`User ${userId}: ${thresholdPercentage.toFixed(1)}% inactive, status: ${handoverStatus}`);
+      console.log(
+        `User ${userId}: ${thresholdPercentage.toFixed(1)}% inactive, status: ${handoverStatus}`,
+      );
     }
   }
 
   private async sendReminderIfDue(
     userId: string,
     reminderType: ReminderType,
-    _activityStatus: ActivityStatus
+    _activityStatus: ActivityStatus,
   ): Promise<void> {
     try {
       // Check if we've already sent this type of reminder recently
       const lastReminder = await this.getLastReminderSent(userId, reminderType);
       const reminderCooldown = this.getReminderCooldown(reminderType);
 
-      if (lastReminder && (Date.now() - lastReminder.getTime()) < reminderCooldown) {
+      if (
+        lastReminder &&
+        Date.now() - lastReminder.getTime() < reminderCooldown
+      ) {
         return; // Too soon to send another reminder of this type
       }
 
       // Send the reminder
-      const result = await this.notificationService.sendReminder(userId, reminderType);
-      
-      if (result.status === 'sent' || result.status === 'delivered') {
+      const result = await this.notificationService.sendReminder(
+        userId,
+        reminderType,
+      );
+
+      if (result.status === "sent" || result.status === "delivered") {
         console.log(`Sent ${reminderType} reminder to user ${userId}`);
       } else {
-        console.error(`Failed to send ${reminderType} reminder to user ${userId}:`, result.errorMessage);
+        console.error(
+          `Failed to send ${reminderType} reminder to user ${userId}:`,
+          result.errorMessage,
+        );
       }
     } catch (error) {
-      console.error(`Error sending ${reminderType} reminder to user ${userId}:`, error);
+      console.error(
+        `Error sending ${reminderType} reminder to user ${userId}:`,
+        error,
+      );
     }
   }
 
@@ -242,19 +286,19 @@ export class InactivityMonitorService implements InactivityMonitor {
   private async getInactivitySettings(userId: string) {
     const query = "SELECT * FROM inactivity_settings WHERE user_id = $1";
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       // Return default settings
       return {
         thresholdDays: 90,
-        notificationMethods: ['email'],
+        notificationMethods: ["email"],
       };
     }
 
     const row = result.rows[0];
     return {
       thresholdDays: row.threshold_days,
-      notificationMethods: row.notification_methods || ['email'],
+      notificationMethods: row.notification_methods || ["email"],
     };
   }
 
@@ -266,7 +310,7 @@ export class InactivityMonitorService implements InactivityMonitor {
     `;
 
     const result = await DatabaseConnection.query(query);
-    
+
     if (result.rows.length === 0) {
       return false;
     }
@@ -282,13 +326,13 @@ export class InactivityMonitorService implements InactivityMonitor {
     `;
 
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       return false;
     }
 
     const row = result.rows[0];
-    
+
     // Check if permanently paused
     if (row.is_paused && !row.paused_until) {
       return true;
@@ -302,21 +346,35 @@ export class InactivityMonitorService implements InactivityMonitor {
     return false;
   }
 
-  private async adjustForSystemDowntime(_activityStatus: ActivityStatus): Promise<ActivityStatus> {
+  private async adjustForSystemDowntime(
+    _activityStatus: ActivityStatus,
+  ): Promise<ActivityStatus> {
     // Get total system downtime since user's last activity
-    const downtimeMs = await this.getSystemDowntimeSince(_activityStatus.lastActivity);
-    
+    const downtimeMs = await this.getSystemDowntimeSince(
+      _activityStatus.lastActivity,
+    );
+
     if (downtimeMs === 0) {
       return _activityStatus;
     }
 
     // Adjust the inactivity duration by subtracting downtime
-    const adjustedInactivityDuration = Math.max(0, _activityStatus.inactivityDuration - downtimeMs);
-    
+    const adjustedInactivityDuration = Math.max(
+      0,
+      _activityStatus.inactivityDuration - downtimeMs,
+    );
+
     // Recalculate other fields based on adjusted duration
-    const thresholdMs = _activityStatus.timeRemaining + _activityStatus.inactivityDuration;
-    const adjustedThresholdPercentage = Math.min((adjustedInactivityDuration / thresholdMs) * 100, 100);
-    const adjustedTimeRemaining = Math.max(0, thresholdMs - adjustedInactivityDuration);
+    const thresholdMs =
+      _activityStatus.timeRemaining + _activityStatus.inactivityDuration;
+    const adjustedThresholdPercentage = Math.min(
+      (adjustedInactivityDuration / thresholdMs) * 100,
+      100,
+    );
+    const adjustedTimeRemaining = Math.max(
+      0,
+      thresholdMs - adjustedInactivityDuration,
+    );
 
     return {
       ..._activityStatus,
@@ -337,9 +395,9 @@ export class InactivityMonitorService implements InactivityMonitor {
     `;
 
     const result = await DatabaseConnection.query(query, [since]);
-    
+
     let totalDowntime = 0;
-    
+
     for (const row of result.rows) {
       const start = new Date(row.downtime_start);
       const end = new Date(row.downtime_end);
@@ -349,10 +407,16 @@ export class InactivityMonitorService implements InactivityMonitor {
     return totalDowntime;
   }
 
-  private async updateSystemStatus(status: SystemStatusType, reason: string): Promise<void> {
+  private async updateSystemStatus(
+    status: SystemStatusType,
+    reason: string,
+  ): Promise<void> {
     const now = new Date();
-    
-    if (status === SystemStatusType.MAINTENANCE || status === SystemStatusType.OUTAGE) {
+
+    if (
+      status === SystemStatusType.MAINTENANCE ||
+      status === SystemStatusType.OUTAGE
+    ) {
       // Starting downtime
       const query = `
         INSERT INTO system_status (status, downtime_start, reason, created_at)
@@ -383,7 +447,10 @@ export class InactivityMonitorService implements InactivityMonitor {
     }
   }
 
-  private async getLastReminderSent(userId: string, reminderType: ReminderType): Promise<Date | null> {
+  private async getLastReminderSent(
+    userId: string,
+    reminderType: ReminderType,
+  ): Promise<Date | null> {
     const query = `
       SELECT MAX(created_at) as last_sent
       FROM notification_deliveries 
@@ -392,8 +459,11 @@ export class InactivityMonitorService implements InactivityMonitor {
         AND status IN ('sent', 'delivered')
     `;
 
-    const result = await DatabaseConnection.query(query, [userId, reminderType]);
-    
+    const result = await DatabaseConnection.query(query, [
+      userId,
+      reminderType,
+    ]);
+
     if (result.rows.length === 0 || !result.rows[0].last_sent) {
       return null;
     }
@@ -409,14 +479,14 @@ export class InactivityMonitorService implements InactivityMonitor {
       case ReminderType.SECOND_REMINDER:
         return 12 * 60 * 60 * 1000; // 12 hours
       case ReminderType.FINAL_WARNING:
-        return 6 * 60 * 60 * 1000;  // 6 hours
+        return 6 * 60 * 60 * 1000; // 6 hours
       default:
         return 60 * 60 * 1000; // 1 hour
     }
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => global.setTimeout(resolve, ms));
+    return new Promise((resolve) => global.setTimeout(resolve, ms));
   }
 
   /**
@@ -442,7 +512,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       isRunning: this.isRunning,
       checkInterval: this.CHECK_INTERVAL_MS,
       activeUsers: activeUsers.length,
-      systemStatus: systemStatus || 'unknown',
+      systemStatus: systemStatus || "unknown",
     };
   }
 

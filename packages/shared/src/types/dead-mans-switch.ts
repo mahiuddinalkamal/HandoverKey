@@ -129,74 +129,74 @@ export interface HandoverAuditEntry {
 
 // Enums
 export enum ActivityType {
-  LOGIN = 'login',
-  VAULT_ACCESS = 'vault_access',
-  SETTINGS_CHANGE = 'settings_change',
-  MANUAL_CHECKIN = 'manual_checkin',
-  API_REQUEST = 'api_request',
-  SUCCESSOR_MANAGEMENT = 'successor_management',
-  HANDOVER_CANCELLED = 'handover_cancelled'
+  LOGIN = "login",
+  VAULT_ACCESS = "vault_access",
+  SETTINGS_CHANGE = "settings_change",
+  MANUAL_CHECKIN = "manual_checkin",
+  API_REQUEST = "api_request",
+  SUCCESSOR_MANAGEMENT = "successor_management",
+  HANDOVER_CANCELLED = "handover_cancelled",
 }
 
 export enum ClientType {
-  WEB = 'web',
-  MOBILE = 'mobile',
-  CLI = 'cli',
-  API = 'api'
+  WEB = "web",
+  MOBILE = "mobile",
+  CLI = "cli",
+  API = "api",
 }
 
 export enum HandoverStatus {
-  NORMAL = 'normal',
-  REMINDER_PHASE = 'reminder_phase',
-  GRACE_PERIOD = 'grace_period',
-  HANDOVER_ACTIVE = 'handover_active',
-  PAUSED = 'paused'
+  NORMAL = "normal",
+  REMINDER_PHASE = "reminder_phase",
+  GRACE_PERIOD = "grace_period",
+  HANDOVER_ACTIVE = "handover_active",
+  PAUSED = "paused",
 }
 
 export enum HandoverProcessStatus {
-  GRACE_PERIOD = 'grace_period',
-  AWAITING_SUCCESSORS = 'awaiting_successors',
-  VERIFICATION_PENDING = 'verification_pending',
-  READY_FOR_TRANSFER = 'ready_for_transfer',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  GRACE_PERIOD = "grace_period",
+  AWAITING_SUCCESSORS = "awaiting_successors",
+  VERIFICATION_PENDING = "verification_pending",
+  READY_FOR_TRANSFER = "ready_for_transfer",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
 }
 
 export enum ReminderType {
-  FIRST_REMINDER = 'first_reminder',    // 75%
-  SECOND_REMINDER = 'second_reminder',  // 85%
-  FINAL_WARNING = 'final_warning',      // 95%
-  GRACE_PERIOD = 'grace_period',        // 100%+
-  HANDOVER_INITIATED = 'handover_initiated',
-  SUCCESSOR_NOTIFICATION = 'successor_notification'
+  FIRST_REMINDER = "first_reminder", // 75%
+  SECOND_REMINDER = "second_reminder", // 85%
+  FINAL_WARNING = "final_warning", // 95%
+  GRACE_PERIOD = "grace_period", // 100%+
+  HANDOVER_INITIATED = "handover_initiated",
+  SUCCESSOR_NOTIFICATION = "successor_notification",
 }
 
 export enum NotificationMethod {
-  EMAIL = 'email',
-  SMS = 'sms',
-  PUSH = 'push'
+  EMAIL = "email",
+  SMS = "sms",
+  PUSH = "push",
 }
 
 export enum DeliveryStatus {
-  PENDING = 'pending',
-  SENT = 'sent',
-  DELIVERED = 'delivered',
-  FAILED = 'failed',
-  BOUNCED = 'bounced'
+  PENDING = "pending",
+  SENT = "sent",
+  DELIVERED = "delivered",
+  FAILED = "failed",
+  BOUNCED = "bounced",
 }
 
 export enum VerificationStatus {
-  PENDING = 'pending',
-  VERIFIED = 'verified',
-  FAILED = 'failed',
-  EXPIRED = 'expired'
+  PENDING = "pending",
+  VERIFIED = "verified",
+  FAILED = "failed",
+  EXPIRED = "expired",
 }
 
 export enum SystemStatusType {
-  OPERATIONAL = 'operational',
-  MAINTENANCE = 'maintenance',
-  DEGRADED = 'degraded',
-  OUTAGE = 'outage'
+  OPERATIONAL = "operational",
+  MAINTENANCE = "maintenance",
+  DEGRADED = "degraded",
+  OUTAGE = "outage",
 }
 
 // Request/Response interfaces
@@ -239,7 +239,11 @@ export interface ActivityHistoryResponse {
 
 // Service interfaces
 export interface ActivityTracker {
-  recordActivity(userId: string, activityType: ActivityType, metadata?: any): Promise<void>;
+  recordActivity(
+    userId: string,
+    activityType: ActivityType,
+    metadata?: any,
+  ): Promise<void>;
   getLastActivity(userId: string): Promise<ActivityRecord | null>;
   getUserActivityStatus(userId: string): Promise<ActivityStatus>;
   pauseTracking(userId: string, reason: string, until?: Date): Promise<void>;
@@ -247,8 +251,14 @@ export interface ActivityTracker {
 }
 
 export interface NotificationService {
-  sendReminder(userId: string, reminderType: ReminderType): Promise<NotificationResult>;
-  sendHandoverAlert(userId: string, successors: string[]): Promise<NotificationResult[]>;
+  sendReminder(
+    userId: string,
+    reminderType: ReminderType,
+  ): Promise<NotificationResult>;
+  sendHandoverAlert(
+    userId: string,
+    successors: string[],
+  ): Promise<NotificationResult[]>;
   generateCheckInLink(userId: string, expiresIn: number): Promise<string>;
   validateCheckInLink(token: string): Promise<CheckInValidation>;
 }
@@ -256,7 +266,11 @@ export interface NotificationService {
 export interface HandoverOrchestrator {
   initiateHandover(userId: string): Promise<HandoverProcess>;
   cancelHandover(userId: string, reason: string): Promise<void>;
-  processSuccessorResponse(handoverId: string, successorId: string, response: any): Promise<void>;
+  processSuccessorResponse(
+    handoverId: string,
+    successorId: string,
+    response: any,
+  ): Promise<void>;
   getHandoverStatus(userId: string): Promise<HandoverProcess | null>;
 }
 

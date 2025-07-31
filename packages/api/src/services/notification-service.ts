@@ -10,32 +10,44 @@ import {
 import { createHash, randomBytes } from "crypto";
 
 export class NotificationService implements INotificationService {
-  private static readonly CHECK_IN_SECRET = process.env.CHECK_IN_SECRET || "default-checkin-secret-change-in-production";
+  private static readonly CHECK_IN_SECRET =
+    process.env.CHECK_IN_SECRET ||
+    "default-checkin-secret-change-in-production";
 
   /**
    * Sends a reminder notification to a user
    */
-  async sendReminder(userId: string, reminderType: ReminderType): Promise<NotificationResult> {
+  async sendReminder(
+    userId: string,
+    reminderType: ReminderType,
+  ): Promise<NotificationResult> {
     try {
       // Get user's notification preferences
       await this.getUserNotificationSettings(userId);
       const user = await this.getUserById(userId);
-      
+
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       // Generate check-in link for the reminder
-      const checkInLink = await this.generateCheckInLink(userId, 7 * 24 * 60 * 60 * 1000); // 7 days
+      const checkInLink = await this.generateCheckInLink(
+        userId,
+        7 * 24 * 60 * 60 * 1000,
+      ); // 7 days
 
       // Create notification content based on reminder type
-      const content = this.createReminderContent(reminderType, user.email, checkInLink);
+      const content = this.createReminderContent(
+        reminderType,
+        user.email,
+        checkInLink,
+      );
 
       // Send via primary notification method (email for now)
       const result = await this.sendEmailNotification(
         user.email,
         content.subject,
-        content.body
+        content.body,
       );
 
       // Record the notification delivery
@@ -58,16 +70,19 @@ export class NotificationService implements INotificationService {
         errorMessage: result.errorMessage,
       };
     } catch (error) {
-      console.error(`Failed to send ${reminderType} reminder to user ${userId}:`, error);
-      
+      console.error(
+        `Failed to send ${reminderType} reminder to user ${userId}:`,
+        error,
+      );
+
       // Record failed delivery
       await this.recordNotificationDelivery({
         userId,
         notificationType: reminderType,
         method: NotificationMethod.EMAIL,
-        recipient: 'unknown',
+        recipient: "unknown",
         status: DeliveryStatus.FAILED,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       });
 
       return {
@@ -77,7 +92,7 @@ export class NotificationService implements INotificationService {
         status: DeliveryStatus.FAILED,
         timestamp: new Date(),
         retryCount: 0,
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -85,7 +100,10 @@ export class NotificationService implements INotificationService {
   /**
    * Sends handover alerts to successors
    */
-  async sendHandoverAlert(userId: string, successors: string[]): Promise<NotificationResult[]> {
+  async sendHandoverAlert(
+    userId: string,
+    successors: string[],
+  ): Promise<NotificationResult[]> {
     const results: NotificationResult[] = [];
 
     for (const successorId of successors) {
@@ -96,12 +114,15 @@ export class NotificationService implements INotificationService {
           continue;
         }
 
-        const content = this.createHandoverAlertContent(successor.name, successor.email);
-        
+        const content = this.createHandoverAlertContent(
+          successor.name,
+          successor.email,
+        );
+
         const result = await this.sendEmailNotification(
           successor.email,
           content.subject,
-          content.body
+          content.body,
         );
 
         await this.recordNotificationDelivery({
@@ -123,8 +144,11 @@ export class NotificationService implements INotificationService {
           errorMessage: result.errorMessage,
         });
       } catch (error) {
-        console.error(`Failed to send handover alert to successor ${successorId}:`, error);
-        
+        console.error(
+          `Failed to send handover alert to successor ${successorId}:`,
+          error,
+        );
+
         results.push({
           id: `failed-${Date.now()}-${successorId}`,
           userId,
@@ -132,7 +156,8 @@ export class NotificationService implements INotificationService {
           status: DeliveryStatus.FAILED,
           timestamp: new Date(),
           retryCount: 0,
-          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          errorMessage:
+            error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
@@ -143,9 +168,12 @@ export class NotificationService implements INotificationService {
   /**
    * Generates a secure check-in link
    */
-  async generateCheckInLink(userId: string, expiresIn: number): Promise<string> {
-    const token = randomBytes(32).toString('hex');
-    const tokenHash = createHash('sha256').update(token).digest('hex');
+  async generateCheckInLink(
+    userId: string,
+    expiresIn: number,
+  ): Promise<string> {
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
     const expiresAt = new Date(Date.now() + expiresIn);
 
     // Store the token hash in database
@@ -157,7 +185,7 @@ export class NotificationService implements INotificationService {
     await DatabaseConnection.query(query, [userId, tokenHash, expiresAt]);
 
     // Return the check-in URL (token is not hashed in URL)
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || "http://localhost:3000";
     return `${baseUrl}/checkin?token=${token}`;
   }
 
@@ -166,8 +194,8 @@ export class NotificationService implements INotificationService {
    */
   async validateCheckInLink(token: string): Promise<CheckInValidation> {
     try {
-      const tokenHash = createHash('sha256').update(token).digest('hex');
-      
+      const tokenHash = createHash("sha256").update(token).digest("hex");
+
       const query = `
         SELECT user_id, expires_at, used_at 
         FROM checkin_tokens 
@@ -179,7 +207,7 @@ export class NotificationService implements INotificationService {
       if (result.rows.length === 0) {
         return {
           isValid: false,
-          error: 'Invalid check-in token',
+          error: "Invalid check-in token",
         };
       }
 
@@ -189,7 +217,7 @@ export class NotificationService implements INotificationService {
       if (new Date() > new Date(tokenData.expires_at)) {
         return {
           isValid: false,
-          error: 'Check-in token has expired',
+          error: "Check-in token has expired",
         };
       }
 
@@ -197,7 +225,7 @@ export class NotificationService implements INotificationService {
       if (tokenData.used_at) {
         return {
           isValid: false,
-          error: 'Check-in token has already been used',
+          error: "Check-in token has already been used",
         };
       }
 
@@ -207,10 +235,10 @@ export class NotificationService implements INotificationService {
         remainingTime: new Date(tokenData.expires_at).getTime() - Date.now(),
       };
     } catch (error) {
-      console.error('Error validating check-in token:', error);
+      console.error("Error validating check-in token:", error);
       return {
         isValid: false,
-        error: 'Failed to validate check-in token',
+        error: "Failed to validate check-in token",
       };
     }
   }
@@ -218,9 +246,13 @@ export class NotificationService implements INotificationService {
   /**
    * Marks a check-in token as used
    */
-  async markCheckInTokenUsed(token: string, ipAddress?: string, userAgent?: string): Promise<void> {
-    const tokenHash = createHash('sha256').update(token).digest('hex');
-    
+  async markCheckInTokenUsed(
+    token: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<void> {
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+
     const query = `
       UPDATE checkin_tokens 
       SET used_at = NOW(), ip_address = $2, user_agent = $3
@@ -236,7 +268,7 @@ export class NotificationService implements INotificationService {
   private async sendEmailNotification(
     to: string,
     subject: string,
-    body: string
+    body: string,
   ): Promise<{ id: string; status: DeliveryStatus; errorMessage?: string }> {
     // TODO: Implement actual email sending (SendGrid, AWS SES, etc.)
     // For now, just log and simulate success
@@ -253,14 +285,14 @@ export class NotificationService implements INotificationService {
   private createReminderContent(
     reminderType: ReminderType,
     userEmail: string,
-    checkInLink: string
+    checkInLink: string,
   ): { subject: string; body: string } {
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    
+    const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+
     switch (reminderType) {
       case ReminderType.FIRST_REMINDER:
         return {
-          subject: 'HandoverKey Activity Reminder - 75% Threshold Reached',
+          subject: "HandoverKey Activity Reminder - 75% Threshold Reached",
           body: `
 Hello,
 
@@ -280,7 +312,7 @@ The HandoverKey Team
 
       case ReminderType.SECOND_REMINDER:
         return {
-          subject: 'HandoverKey Activity Reminder - 85% Threshold Reached',
+          subject: "HandoverKey Activity Reminder - 85% Threshold Reached",
           body: `
 Hello,
 
@@ -300,7 +332,7 @@ The HandoverKey Team
 
       case ReminderType.FINAL_WARNING:
         return {
-          subject: 'URGENT: HandoverKey Final Warning - 95% Threshold Reached',
+          subject: "URGENT: HandoverKey Final Warning - 95% Threshold Reached",
           body: `
 URGENT NOTICE
 
@@ -320,7 +352,7 @@ The HandoverKey Team
 
       default:
         return {
-          subject: 'HandoverKey Activity Reminder',
+          subject: "HandoverKey Activity Reminder",
           body: `
 Hello,
 
@@ -338,12 +370,12 @@ The HandoverKey Team
 
   private createHandoverAlertContent(
     successorName: string,
-    _successorEmail: string
+    _successorEmail: string,
   ): { subject: string; body: string } {
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    
+    const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+
     return {
-      subject: 'HandoverKey: Digital Asset Handover Initiated',
+      subject: "HandoverKey: Digital Asset Handover Initiated",
       body: `
 Dear ${successorName},
 
@@ -364,22 +396,23 @@ The HandoverKey Team
   }
 
   private async getUserNotificationSettings(userId: string) {
-    const query = "SELECT notification_methods FROM inactivity_settings WHERE user_id = $1";
+    const query =
+      "SELECT notification_methods FROM inactivity_settings WHERE user_id = $1";
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
-      return { notificationMethods: ['email'] };
+      return { notificationMethods: ["email"] };
     }
 
     return {
-      notificationMethods: result.rows[0].notification_methods || ['email'],
+      notificationMethods: result.rows[0].notification_methods || ["email"],
     };
   }
 
   private async getUserById(userId: string) {
     const query = "SELECT id, email FROM users WHERE id = $1";
     const result = await DatabaseConnection.query(query, [userId]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
@@ -393,7 +426,7 @@ The HandoverKey Team
   private async getSuccessorById(successorId: string) {
     const query = "SELECT id, name, email FROM successors WHERE id = $1";
     const result = await DatabaseConnection.query(query, [successorId]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }

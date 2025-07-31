@@ -10,7 +10,11 @@ export class ActivityMiddleware {
    * Middleware to automatically track user activity
    */
   static trackActivity(activityType: ActivityType = ActivityType.API_REQUEST) {
-    return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    return async (
+      req: AuthenticatedRequest,
+      res: Response,
+      next: NextFunction,
+    ) => {
       try {
         // Only track activity for authenticated users
         if (!req.user?.userId) {
@@ -34,17 +38,17 @@ export class ActivityMiddleware {
               metadata,
               clientType,
               req.ip,
-              req.get('User-Agent')
+              req.get("User-Agent"),
             );
           } catch (error) {
-            console.error('Failed to record activity:', error);
+            console.error("Failed to record activity:", error);
             // Don't fail the request if activity tracking fails
           }
         });
 
         next();
       } catch (error) {
-        console.error('Activity middleware error:', error);
+        console.error("Activity middleware error:", error);
         // Don't fail the request if activity tracking fails
         next();
       }
@@ -85,40 +89,43 @@ export class ActivityMiddleware {
   static async handleManualCheckIn(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user?.userId) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: "Not authenticated" });
       }
 
       const clientType = ActivityMiddleware.detectClientType(req);
-      
+
       await ActivityMiddleware.activityService.recordActivity(
         req.user.userId,
         ActivityType.MANUAL_CHECKIN,
-        { 
+        {
           manual: true,
           timestamp: new Date().toISOString(),
-          source: 'manual_checkin_endpoint'
+          source: "manual_checkin_endpoint",
         },
         clientType,
         req.ip,
-        req.get('User-Agent')
+        req.get("User-Agent"),
       );
 
       // Get updated activity status
-      const activityStatus = await ActivityMiddleware.activityService.getUserActivityStatus(req.user.userId);
+      const activityStatus =
+        await ActivityMiddleware.activityService.getUserActivityStatus(
+          req.user.userId,
+        );
 
       res.json({
         success: true,
-        message: 'Check-in recorded successfully',
+        message: "Check-in recorded successfully",
         activityStatus: {
           lastActivity: activityStatus.lastActivity,
           timeRemaining: activityStatus.timeRemaining,
           thresholdPercentage: activityStatus.thresholdPercentage,
           handoverStatus: activityStatus.handoverStatus,
-        }
+        },
       });
     } catch (error) {
-      console.error('Manual check-in error:', error);
-      res.status(500).json({ error: 'Failed to record check-in' });
+      console.error("Manual check-in error:", error);
+      res.status(500).json({ error: "Failed to record check-in" });
     }
   }
 
@@ -128,11 +135,14 @@ export class ActivityMiddleware {
   static async getActivityStatus(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user?.userId) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const activityStatus = await ActivityMiddleware.activityService.getUserActivityStatus(req.user.userId);
-      
+      const activityStatus =
+        await ActivityMiddleware.activityService.getUserActivityStatus(
+          req.user.userId,
+        );
+
       res.json({
         activityStatus: {
           lastActivity: activityStatus.lastActivity,
@@ -141,11 +151,11 @@ export class ActivityMiddleware {
           nextReminderDue: activityStatus.nextReminderDue,
           handoverStatus: activityStatus.handoverStatus,
           timeRemaining: activityStatus.timeRemaining,
-        }
+        },
       });
     } catch (error) {
-      console.error('Get activity status error:', error);
-      res.status(500).json({ error: 'Failed to get activity status' });
+      console.error("Get activity status error:", error);
+      res.status(500).json({ error: "Failed to get activity status" });
     }
   }
 
@@ -155,7 +165,7 @@ export class ActivityMiddleware {
   static async getActivityHistory(req: AuthenticatedRequest, res: Response) {
     try {
       if (!req.user?.userId) {
-        return res.status(401).json({ error: 'Not authenticated' });
+        return res.status(401).json({ error: "Not authenticated" });
       }
 
       const {
@@ -163,25 +173,28 @@ export class ActivityMiddleware {
         offset = 0,
         startDate,
         endDate,
-        activityTypes
+        activityTypes,
       } = req.query;
 
       const parsedLimit = Math.min(parseInt(limit as string) || 50, 100);
       const parsedOffset = parseInt(offset as string) || 0;
-      const parsedStartDate = startDate ? new Date(startDate as string) : undefined;
+      const parsedStartDate = startDate
+        ? new Date(startDate as string)
+        : undefined;
       const parsedEndDate = endDate ? new Date(endDate as string) : undefined;
-      const parsedActivityTypes = activityTypes 
-        ? (activityTypes as string).split(',') as ActivityType[]
+      const parsedActivityTypes = activityTypes
+        ? ((activityTypes as string).split(",") as ActivityType[])
         : undefined;
 
-      const result = await ActivityMiddleware.activityService.getActivityHistory(
-        req.user.userId,
-        parsedLimit,
-        parsedOffset,
-        parsedStartDate,
-        parsedEndDate,
-        parsedActivityTypes
-      );
+      const result =
+        await ActivityMiddleware.activityService.getActivityHistory(
+          req.user.userId,
+          parsedLimit,
+          parsedOffset,
+          parsedStartDate,
+          parsedEndDate,
+          parsedActivityTypes,
+        );
 
       res.json({
         activities: result.activities,
@@ -190,12 +203,12 @@ export class ActivityMiddleware {
         pagination: {
           limit: parsedLimit,
           offset: parsedOffset,
-          total: result.total
-        }
+          total: result.total,
+        },
       });
     } catch (error) {
-      console.error('Get activity history error:', error);
-      res.status(500).json({ error: 'Failed to get activity history' });
+      console.error("Get activity history error:", error);
+      res.status(500).json({ error: "Failed to get activity history" });
     }
   }
 
@@ -203,29 +216,27 @@ export class ActivityMiddleware {
    * Private helper methods
    */
   private static shouldSkipTracking(req: Request): boolean {
-    const skipPaths = [
-      '/health',
-      '/metrics',
-      '/favicon.ico',
-    ];
+    const skipPaths = ["/health", "/metrics", "/favicon.ico"];
 
-    const skipMethods = ['OPTIONS'];
+    const skipMethods = ["OPTIONS"];
 
-    return skipPaths.some(path => req.path.includes(path)) ||
-           skipMethods.includes(req.method);
+    return (
+      skipPaths.some((path) => req.path.includes(path)) ||
+      skipMethods.includes(req.method)
+    );
   }
 
   private static detectClientType(req: Request): ClientType {
-    const userAgent = req.get('User-Agent') || '';
-    const clientHeader = req.get('X-Client-Type');
+    const userAgent = req.get("User-Agent") || "";
+    const clientHeader = req.get("X-Client-Type");
 
     if (clientHeader) {
       switch (clientHeader.toLowerCase()) {
-        case 'mobile':
+        case "mobile":
           return ClientType.MOBILE;
-        case 'cli':
+        case "cli":
           return ClientType.CLI;
-        case 'web':
+        case "web":
           return ClientType.WEB;
         default:
           return ClientType.API;
@@ -233,18 +244,25 @@ export class ActivityMiddleware {
     }
 
     // Detect based on User-Agent
-    if (userAgent.includes('HandoverKey-CLI')) {
+    if (userAgent.includes("HandoverKey-CLI")) {
       return ClientType.CLI;
-    } else if (userAgent.includes('HandoverKey-Mobile')) {
+    } else if (userAgent.includes("HandoverKey-Mobile")) {
       return ClientType.MOBILE;
-    } else if (userAgent.includes('Mozilla') || userAgent.includes('Chrome') || userAgent.includes('Safari')) {
+    } else if (
+      userAgent.includes("Mozilla") ||
+      userAgent.includes("Chrome") ||
+      userAgent.includes("Safari")
+    ) {
       return ClientType.WEB;
     }
 
     return ClientType.API;
   }
 
-  private static extractMetadata(req: Request, activityType: ActivityType): Record<string, unknown> {
+  private static extractMetadata(
+    req: Request,
+    activityType: ActivityType,
+  ): Record<string, unknown> {
     const metadata: Record<string, unknown> = {
       endpoint: req.path,
       method: req.method,
@@ -257,7 +275,10 @@ export class ActivityMiddleware {
         if (req.params.id) {
           metadata.vaultEntryId = req.params.id;
         }
-        metadata.action = ActivityMiddleware.getVaultAction(req.method, req.path);
+        metadata.action = ActivityMiddleware.getVaultAction(
+          req.method,
+          req.path,
+        );
         break;
 
       case ActivityType.SETTINGS_CHANGE:
@@ -268,11 +289,14 @@ export class ActivityMiddleware {
         if (req.params.id) {
           metadata.successorId = req.params.id;
         }
-        metadata.action = ActivityMiddleware.getSuccessorAction(req.method, req.path);
+        metadata.action = ActivityMiddleware.getSuccessorAction(
+          req.method,
+          req.path,
+        );
         break;
 
       case ActivityType.LOGIN:
-        metadata.loginMethod = req.body?.twoFactorCode ? '2fa' : 'password';
+        metadata.loginMethod = req.body?.twoFactorCode ? "2fa" : "password";
         break;
 
       default:
@@ -283,43 +307,43 @@ export class ActivityMiddleware {
   }
 
   private static getVaultAction(method: string, path: string): string {
-    if (method === 'GET' && path.includes('/entries/')) {
-      return 'view_entry';
-    } else if (method === 'GET') {
-      return 'list_entries';
-    } else if (method === 'POST') {
-      return 'create_entry';
-    } else if (method === 'PUT') {
-      return 'update_entry';
-    } else if (method === 'DELETE') {
-      return 'delete_entry';
+    if (method === "GET" && path.includes("/entries/")) {
+      return "view_entry";
+    } else if (method === "GET") {
+      return "list_entries";
+    } else if (method === "POST") {
+      return "create_entry";
+    } else if (method === "PUT") {
+      return "update_entry";
+    } else if (method === "DELETE") {
+      return "delete_entry";
     }
-    return 'unknown';
+    return "unknown";
   }
 
   private static getSettingsType(path: string): string {
-    if (path.includes('/profile')) {
-      return 'profile';
-    } else if (path.includes('/inactivity')) {
-      return 'inactivity';
-    } else if (path.includes('/notifications')) {
-      return 'notifications';
+    if (path.includes("/profile")) {
+      return "profile";
+    } else if (path.includes("/inactivity")) {
+      return "inactivity";
+    } else if (path.includes("/notifications")) {
+      return "notifications";
     }
-    return 'general';
+    return "general";
   }
 
   private static getSuccessorAction(method: string, path: string): string {
-    if (method === 'GET' && path.includes('/successors/')) {
-      return 'view_successor';
-    } else if (method === 'GET') {
-      return 'list_successors';
-    } else if (method === 'POST') {
-      return 'add_successor';
-    } else if (method === 'PUT') {
-      return 'update_successor';
-    } else if (method === 'DELETE') {
-      return 'remove_successor';
+    if (method === "GET" && path.includes("/successors/")) {
+      return "view_successor";
+    } else if (method === "GET") {
+      return "list_successors";
+    } else if (method === "POST") {
+      return "add_successor";
+    } else if (method === "PUT") {
+      return "update_successor";
+    } else if (method === "DELETE") {
+      return "remove_successor";
     }
-    return 'unknown';
+    return "unknown";
   }
 }
