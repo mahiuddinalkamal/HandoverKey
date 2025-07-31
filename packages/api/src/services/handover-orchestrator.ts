@@ -3,7 +3,7 @@ import {
   HandoverOrchestrator as IHandoverOrchestrator,
   HandoverProcess,
   HandoverProcessStatus,
-} from "@handoverkey/shared";
+} from "@handoverkey/shared/src/types/dead-mans-switch";
 
 export class HandoverOrchestrator implements IHandoverOrchestrator {
   private static readonly GRACE_PERIOD_HOURS = 48;

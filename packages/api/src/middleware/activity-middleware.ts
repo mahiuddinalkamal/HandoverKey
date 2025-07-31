@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ActivityService } from "../services/activity-service";
-import { ActivityType, ClientType } from "@handoverkey/shared";
+import { ActivityType, ClientType } from "@handoverkey/shared/src/types/dead-mans-switch";
 import { AuthenticatedRequest } from "./auth";
 
 export class ActivityMiddleware {

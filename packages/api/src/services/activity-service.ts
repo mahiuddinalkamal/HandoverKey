@@ -7,7 +7,7 @@ import {
   ClientType,
   HandoverStatus,
   ActivityTracker,
-} from "@handoverkey/shared";
+} from "@handoverkey/shared/src/types/dead-mans-switch";
 
 export class ActivityService implements ActivityTracker {
   private static readonly HMAC_SECRET =

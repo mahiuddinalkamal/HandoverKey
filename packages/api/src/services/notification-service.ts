@@ -6,7 +6,7 @@ import {
   NotificationMethod,
   DeliveryStatus,
   CheckInValidation,
-} from "@handoverkey/shared";
+} from "@handoverkey/shared/src/types/dead-mans-switch";
 import { createHash, randomBytes } from "crypto";
 
 export class NotificationService implements INotificationService {

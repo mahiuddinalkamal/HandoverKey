@@ -8,7 +8,7 @@ import {
   HandoverStatus,
   ReminderType,
   SystemStatusType,
-} from "@handoverkey/shared";
+} from "@handoverkey/shared/src/types/dead-mans-switch";
 
 export class InactivityMonitorService implements InactivityMonitor {
   private static instance: InactivityMonitorService;

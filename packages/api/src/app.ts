@@ -21,9 +21,11 @@ const app = express();
 // Initialize database connection
 DatabaseConnection.initialize();
 
-// Initialize and start background jobs
+// Initialize and start background jobs (only in non-test environment)
 const jobManager = JobManager.getInstance();
-jobManager.start();
+if (process.env.NODE_ENV !== 'test') {
+  jobManager.start();
+}
 
 // Security middleware
 app.use(securityHeaders);
