@@ -23,7 +23,7 @@ DatabaseConnection.initialize();
 
 // Initialize and start background jobs (only in non-test environment)
 const jobManager = JobManager.getInstance();
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== "test") {
   jobManager.start();
 }
 
