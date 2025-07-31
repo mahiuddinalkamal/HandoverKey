@@ -8,6 +8,7 @@ const MIGRATION_FILES = [
   "vault.sql",
   "activity.sql",
   "handover.sql",
+  "dead_mans_switch.sql",
 ];
 
 async function runMigrations(): Promise<void> {

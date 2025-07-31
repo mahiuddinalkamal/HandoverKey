@@ -11,6 +11,8 @@ import {
 } from "./middleware/security";
 import authRoutes from "./routes/auth-routes";
 import vaultRoutes from "./routes/vault-routes";
+import activityRoutes from "./routes/activity-routes";
+import { JobManager } from "./services/job-manager";
 
 dotenv.config();
 
@@ -18,6 +20,12 @@ const app = express();
 
 // Initialize database connection
 DatabaseConnection.initialize();
+
+// Initialize and start background jobs (only in non-test environment)
+const jobManager = JobManager.getInstance();
+if (process.env.NODE_ENV !== "test") {
+  jobManager.start();
+}
 
 // Security middleware
 app.use(securityHeaders);
@@ -33,17 +41,37 @@ app.use(validateContentType);
 app.use(sanitizeInput);
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  res.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || "0.1.0",
-  });
+app.get("/health", async (req, res) => {
+  try {
+    const dbHealthy = await DatabaseConnection.testConnection();
+    const jobHealth = await jobManager.getHealthStatus();
+
+    const isHealthy = dbHealthy && jobHealth.isHealthy;
+
+    res.status(isHealthy ? 200 : 503).json({
+      status: isHealthy ? "ok" : "degraded",
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || "0.1.0",
+      checks: {
+        database: dbHealthy ? "ok" : "failed",
+        jobs: jobHealth.isHealthy ? "ok" : "failed",
+      },
+      jobs: jobHealth.jobs,
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "error",
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || "0.1.0",
+      error: "Health check failed",
+    });
+  }
 });
 
 // API routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/vault", vaultRoutes);
+app.use("/api/v1/activity", activityRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {
@@ -53,7 +81,7 @@ app.use("*", (req, res) => {
 // Error handling middleware
 app.use(
   (
-    error: any,
+    error: Error & { type?: string },
     req: express.Request,
     res: express.Response,
     _next: express.NextFunction,
@@ -72,12 +100,14 @@ app.use(
 // Graceful shutdown
 process.on("SIGTERM", async () => {
   console.log("SIGTERM received, shutting down gracefully");
+  jobManager.stop();
   await DatabaseConnection.close();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("SIGINT received, shutting down gracefully");
+  jobManager.stop();
   await DatabaseConnection.close();
   process.exit(0);
 });

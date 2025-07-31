@@ -40,7 +40,7 @@ export default [
     },
   },
   {
-    files: ["**/*.test.ts", "**/__tests__/**/*.ts"],
+    files: ["**/*.test.ts", "**/__tests__/**/*.ts", "**/test-setup.ts"],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
