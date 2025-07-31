@@ -19,7 +19,7 @@ export class ActivityService implements ActivityTracker {
   async recordActivity(
     userId: string,
     activityType: ActivityType,
-    metadata?: any,
+    metadata?: Record<string, unknown>,
     clientType: ClientType = ClientType.WEB,
     ipAddress?: string,
     userAgent?: string
@@ -213,7 +213,7 @@ export class ActivityService implements ActivityTracker {
     activityTypes?: ActivityType[]
   ): Promise<{ activities: ActivityRecord[]; total: number }> {
     let whereClause = "WHERE user_id = $1";
-    const params: any[] = [userId];
+    const params: unknown[] = [userId];
     let paramCount = 1;
 
     if (startDate) {
@@ -249,7 +249,7 @@ export class ActivityService implements ActivityTracker {
     params.push(limit, offset);
 
     const result = await DatabaseConnection.query(query, params);
-    const activities = result.rows.map((row: any) => this.mapRowToActivityRecord(row));
+    const activities = result.rows.map((row: unknown) => this.mapRowToActivityRecord(row));
 
     return { activities, total };
   }
@@ -257,7 +257,7 @@ export class ActivityService implements ActivityTracker {
   /**
    * Private helper methods
    */
-  private generateActivitySignature(activityData: any): string {
+  private generateActivitySignature(activityData: Record<string, unknown>): string {
     const dataString = JSON.stringify(activityData, Object.keys(activityData).sort());
     return createHmac(ActivityService.SIGNATURE_ALGORITHM, ActivityService.HMAC_SECRET)
       .update(dataString)
@@ -340,10 +340,11 @@ export class ActivityService implements ActivityTracker {
   private determineHandoverStatus(
     inactivityDuration: number,
     thresholdDays: number,
-    activeHandover: any
+    activeHandover: unknown
   ): HandoverStatus {
     if (activeHandover) {
-      switch (activeHandover.status) {
+      const handover = activeHandover as { status: string };
+      switch (handover.status) {
         case 'grace_period':
           return HandoverStatus.GRACE_PERIOD;
         case 'awaiting_successors':
@@ -373,17 +374,29 @@ export class ActivityService implements ActivityTracker {
     return Math.max(0, thresholdMs - elapsed);
   }
 
-  private mapRowToActivityRecord(row: any): ActivityRecord {
+  private mapRowToActivityRecord(row: unknown): ActivityRecord {
+    const dbRow = row as {
+      id: string;
+      user_id: string;
+      activity_type: string;
+      client_type: string;
+      ip_address?: string;
+      user_agent?: string;
+      metadata?: string;
+      signature: string;
+      created_at: Date;
+    };
+
     return {
-      id: row.id,
-      userId: row.user_id,
-      activityType: row.activity_type as ActivityType,
-      clientType: row.client_type as ClientType,
-      ipAddress: row.ip_address,
-      userAgent: row.user_agent,
-      metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      signature: row.signature,
-      createdAt: row.created_at,
+      id: dbRow.id,
+      userId: dbRow.user_id,
+      activityType: dbRow.activity_type as ActivityType,
+      clientType: dbRow.client_type as ClientType,
+      ipAddress: dbRow.ip_address,
+      userAgent: dbRow.user_agent,
+      metadata: dbRow.metadata ? JSON.parse(dbRow.metadata) : {},
+      signature: dbRow.signature,
+      createdAt: dbRow.created_at,
     };
   }
 }

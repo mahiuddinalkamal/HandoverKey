@@ -26,7 +26,7 @@ export class ActivityMiddleware {
         const metadata = ActivityMiddleware.extractMetadata(req, activityType);
 
         // Record activity asynchronously to avoid blocking the request
-        setImmediate(async () => {
+        process.nextTick(async () => {
           try {
             await ActivityMiddleware.activityService.recordActivity(
               req.user!.userId,
@@ -244,8 +244,8 @@ export class ActivityMiddleware {
     return ClientType.API;
   }
 
-  private static extractMetadata(req: Request, activityType: ActivityType): any {
-    const metadata: any = {
+  private static extractMetadata(req: Request, activityType: ActivityType): Record<string, unknown> {
+    const metadata: Record<string, unknown> = {
       endpoint: req.path,
       method: req.method,
       timestamp: new Date().toISOString(),
