@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { Encryption } from "@handoverkey/core";
 
 export class PasswordUtils {
@@ -55,8 +56,12 @@ export class PasswordUtils {
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
     let password = "";
 
+    // Use cryptographically secure random bytes instead of Math.random()
+    const secureRandomBytes = randomBytes(length);
+    
     for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * charset.length);
+      // Use secure random bytes to select characters
+      const randomIndex = secureRandomBytes[i] % charset.length;
       password += charset[randomIndex];
     }
 
