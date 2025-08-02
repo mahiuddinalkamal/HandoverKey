@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import { UserService } from "../services/user-service";
+import { SessionService } from "../services/session-service";
 import { JWTManager } from "../auth/jwt";
 import { AuthenticatedRequest } from "../middleware/auth";
 import { UserRegistration, UserLogin } from "@handoverkey/shared";
@@ -266,14 +267,16 @@ export class AuthController {
 
   static async logout(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
+      // Use server-side session validation instead of user-controlled data
+      const isAuthenticated = await SessionService.isAuthenticated(req);
+      if (!isAuthenticated) {
         res.status(401).json({ error: "Not authenticated" });
         return;
       }
 
-      // Log logout
+      // Log logout (req.user is validated by SessionService)
       await UserService.logActivity(
-        req.user.userId,
+        req.user!.userId,
         "USER_LOGOUT",
         req.ip,
         req.get("User-Agent"),
@@ -331,12 +334,15 @@ export class AuthController {
     res: Response,
   ): Promise<void> {
     try {
-      if (!req.user) {
+      // Use server-side session validation instead of user-controlled data
+      const isAuthenticated = await SessionService.isAuthenticated(req);
+      if (!isAuthenticated) {
         res.status(401).json({ error: "Not authenticated" });
         return;
       }
 
-      const user = await UserService.findUserById(req.user.userId);
+      // Server-side validation - fetch user from database (req.user is validated by SessionService)
+      const user = await UserService.findUserById(req.user!.userId);
 
       if (!user) {
         res.status(404).json({ error: "User not found" });

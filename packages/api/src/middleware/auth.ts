@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { JWTManager, JWTPayload } from "../auth/jwt";
+import { SessionService } from "../services/session-service";
 
 export interface AuthenticatedRequest extends Request {
   user?: JWTPayload;
@@ -65,23 +66,30 @@ export const authenticateJWT = (
   }
 };
 
-export const requireAuth = (
+export const requireAuth = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
-): void => {
-  if (!req.user) {
+): Promise<void> => {
+  try {
+    // Use server-side session validation instead of user-controlled data
+    const isAuthenticated = await SessionService.isAuthenticated(req);
+    if (!isAuthenticated) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+    next();
+  } catch (error) {
+    console.error("Authentication validation error:", error);
     res.status(401).json({ error: "Authentication required" });
-    return;
   }
-  next();
 };
 
-export const optionalAuth = (
+export const optionalAuth = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
-): void => {
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -97,7 +105,6 @@ export const optionalAuth = (
       if (token && token.length > 0) {
         try {
           // Use verifyToken which includes expiration check
-          // Don't use separate expiration check that could be bypassed
           const decoded = JWTManager.verifyToken(token);
 
           // Validate decoded payload - prevent bypass with incomplete payloads
@@ -111,11 +118,15 @@ export const optionalAuth = (
             decoded.sessionId &&
             typeof decoded.sessionId === "string"
           ) {
+            // Use server-side session validation instead of trusting user-controlled data
             req.user = decoded;
+            const isAuthenticated = await SessionService.isAuthenticated(req);
+            if (!isAuthenticated) {
+              req.user = undefined; // Clear invalid session
+            }
           }
         } catch {
           // Invalid token - silently ignore for optional auth
-          // But log for security monitoring
           console.warn("Optional auth failed for token");
         }
       }
