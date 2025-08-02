@@ -276,7 +276,7 @@ export class NotificationService implements INotificationService {
     console.log(`[EMAIL] Body: ${body.substring(0, 100)}...`);
 
     // Simulate email sending
-    const randomId = randomBytes(6).toString('hex');
+    const randomId = randomBytes(6).toString("hex");
     return {
       id: `email-${Date.now()}-${randomId}`,
       status: DeliveryStatus.SENT,

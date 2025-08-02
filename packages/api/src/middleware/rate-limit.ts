@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 /* eslint-env node */
 
 interface RateLimitEntry {
@@ -35,21 +35,24 @@ class RateLimitManager {
   private logSecurityEvent(req: Request, reason: string): void {
     const event: SecurityEvent = {
       timestamp: Date.now(),
-      ip: req.ip || 'unknown',
-      userAgent: req.get('User-Agent') || 'unknown',
+      ip: req.ip || "unknown",
+      userAgent: req.get("User-Agent") || "unknown",
       endpoint: req.path,
       reason,
     };
 
     this.securityEvents.push(event);
-    
+
     // Keep only the most recent events
     if (this.securityEvents.length > this.maxEvents) {
       this.securityEvents = this.securityEvents.slice(-this.maxEvents);
     }
 
-    // Log to console for monitoring
-    console.warn(`Security Event: ${reason} from ${event.ip} on ${event.endpoint}`, {
+    // Log to console for monitoring - use safe logging format
+    console.warn("Security Event:", {
+      reason: reason,
+      ip: event.ip,
+      endpoint: event.endpoint,
       timestamp: new Date(event.timestamp).toISOString(),
       userAgent: event.userAgent,
     });
@@ -59,9 +62,9 @@ class RateLimitManager {
     req: Request,
     maxAttempts: number,
     windowMs: number,
-    endpoint: string
+    endpoint: string,
   ): { allowed: boolean; resetTime?: number; attemptsRemaining?: number } {
-    const key = this.getKey(req.ip || 'unknown', endpoint);
+    const key = this.getKey(req.ip || "unknown", endpoint);
     const now = Date.now();
     const entry = this.attempts.get(key);
 
@@ -87,11 +90,14 @@ class RateLimitManager {
 
     if (entry.count >= maxAttempts) {
       // Rate limit exceeded
-      this.logSecurityEvent(req, `Rate limit exceeded: ${entry.count} attempts in ${windowMs}ms`);
-      return { 
-        allowed: false, 
+      this.logSecurityEvent(
+        req,
+        `Rate limit exceeded: ${entry.count} attempts in ${windowMs}ms`,
+      );
+      return {
+        allowed: false,
         resetTime: entry.resetTime,
-        attemptsRemaining: 0 
+        attemptsRemaining: 0,
       };
     }
 
@@ -99,14 +105,16 @@ class RateLimitManager {
     entry.count++;
     this.attempts.set(key, entry);
 
-    return { 
-      allowed: true, 
-      attemptsRemaining: maxAttempts - entry.count 
+    return {
+      allowed: true,
+      attemptsRemaining: maxAttempts - entry.count,
     };
   }
 
   recordValidationFailure(req: Request, validationErrors: any[]): void {
-    const errorTypes = validationErrors.map(err => err.param || 'unknown').join(', ');
+    const errorTypes = validationErrors
+      .map((err) => err.param || "unknown")
+      .join(", ");
     this.logSecurityEvent(req, `Validation failure: ${errorTypes}`);
   }
 
@@ -139,21 +147,21 @@ export function createRateLimit(options: {
       req,
       options.maxAttempts,
       options.windowMs,
-      options.endpoint
+      options.endpoint,
     );
 
     if (!result.allowed) {
       const retryAfter = Math.ceil((result.resetTime! - Date.now()) / 1000);
-      
+
       res.set({
-        'Retry-After': retryAfter.toString(),
-        'X-RateLimit-Limit': options.maxAttempts.toString(),
-        'X-RateLimit-Remaining': '0',
-        'X-RateLimit-Reset': new Date(result.resetTime!).toISOString(),
+        "Retry-After": retryAfter.toString(),
+        "X-RateLimit-Limit": options.maxAttempts.toString(),
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": new Date(result.resetTime!).toISOString(),
       });
 
       res.status(429).json({
-        error: options.message || 'Too many requests',
+        error: options.message || "Too many requests",
         retryAfter,
       });
       return;
@@ -161,8 +169,8 @@ export function createRateLimit(options: {
 
     // Set rate limit headers
     res.set({
-      'X-RateLimit-Limit': options.maxAttempts.toString(),
-      'X-RateLimit-Remaining': result.attemptsRemaining!.toString(),
+      "X-RateLimit-Limit": options.maxAttempts.toString(),
+      "X-RateLimit-Remaining": result.attemptsRemaining!.toString(),
     });
 
     next();
@@ -170,22 +178,30 @@ export function createRateLimit(options: {
 }
 
 // Validation failure logging middleware
-export function logValidationFailures(req: Request, res: Response, next: NextFunction): void {
+export function logValidationFailures(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   const rateLimitManager = RateLimitManager.getInstance();
-  
+
   // Store original json method
   const originalJson = res.json;
-  
+
   // Override json method to intercept validation errors
-  res.json = function(body: any) {
-    if (res.statusCode === 400 && body.error === 'Validation failed' && body.details) {
+  res.json = function (body: any) {
+    if (
+      res.statusCode === 400 &&
+      body.error === "Validation failed" &&
+      body.details
+    ) {
       rateLimitManager.recordValidationFailure(req, body.details);
     }
-    
+
     // Call original json method
     return originalJson.call(this, body);
   };
-  
+
   next();
 }
 
@@ -193,30 +209,30 @@ export function logValidationFailures(req: Request, res: Response, next: NextFun
 export const authRateLimit = createRateLimit({
   maxAttempts: 5,
   windowMs: 15 * 60 * 1000, // 15 minutes
-  endpoint: 'auth',
-  message: 'Too many authentication attempts, please try again later',
+  endpoint: "auth",
+  message: "Too many authentication attempts, please try again later",
 });
 
 export const validationRateLimit = createRateLimit({
   maxAttempts: 20,
   windowMs: 5 * 60 * 1000, // 5 minutes
-  endpoint: 'validation',
-  message: 'Too many validation failures, please check your input',
+  endpoint: "validation",
+  message: "Too many validation failures, please check your input",
 });
 
 export const generalRateLimit = createRateLimit({
   maxAttempts: 100,
   windowMs: 15 * 60 * 1000, // 15 minutes
-  endpoint: 'general',
-  message: 'Too many requests, please slow down',
+  endpoint: "general",
+  message: "Too many requests, please slow down",
 });
 
 // Security monitoring endpoint (for admin use)
 export function getSecurityEvents(req: Request, res: Response): void {
   const rateLimitManager = RateLimitManager.getInstance();
-  const limit = parseInt((req.query?.limit as string) || '100') || 100;
+  const limit = parseInt((req.query?.limit as string) || "100") || 100;
   const events = rateLimitManager.getSecurityEvents(limit);
-  
+
   res.json({
     events,
     total: events.length,
@@ -230,9 +246,9 @@ export function cleanupRateLimits(): void {
 }
 
 // Start cleanup interval (only in production)
-let cleanupInterval: ReturnType<typeof setInterval> | null = null;
-if (process.env.NODE_ENV !== 'test') {
-  cleanupInterval = setInterval(cleanupRateLimits, 5 * 60 * 1000); // Clean up every 5 minutes
+let cleanupInterval: ReturnType<typeof global.setInterval> | null = null;
+if (process.env.NODE_ENV !== "test") {
+  cleanupInterval = global.setInterval(cleanupRateLimits, 5 * 60 * 1000); // Clean up every 5 minutes
 }
 
 // Export for testing

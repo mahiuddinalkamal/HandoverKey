@@ -71,45 +71,85 @@ export const validateContentType = (
   next();
 };
 
-// Enhanced input sanitization with comprehensive security checks
-const sanitizeString = (input: string): string => {
-  if (typeof input !== 'string') {
-    return '';
+// Enhanced input sanitization function
+const sanitizeString = (input: any): string => {
+  // Handle null, undefined, and non-string inputs first
+  if (input === null || input === undefined || typeof input !== "string") {
+    return "";
   }
-  
-  let sanitized = input.trim();
-  
-  // First decode HTML entities to catch encoded attacks
-  sanitized = sanitized
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+
+  // Convert to string and trim
+  let result = String(input).trim();
+
+  // Return empty if only whitespace
+  if (result === "") {
+    return "";
+  }
+
+  // Limit length to prevent DoS attacks
+  if (result.length > 10000) {
+    result = result.substring(0, 10000);
+  }
+
+  // Decode HTML entities first
+  result = result
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, '/');
-  
-  // Remove HTML tags (after decoding entities)
-  sanitized = sanitized.replace(/<[^>]*>/g, '');
-  
+    .replace(/&#x2F;/g, "/");
+
+  // Remove HTML tags iteratively to handle nested tags
+  let previousLength;
+  do {
+    previousLength = result.length;
+    result = result.replace(/<[^>]*>/g, "");
+  } while (result.length !== previousLength && result.length > 0);
+
   // Remove remaining angle brackets
-  sanitized = sanitized.replace(/[<>]/g, '');
-  
-  // Remove dangerous protocols
-  sanitized = sanitized
-    .replace(/javascript:/gi, '')
-    .replace(/vbscript:/gi, '')
-    .replace(/data:/gi, '');
-  
-  // Remove event handlers
-  sanitized = sanitized.replace(/on\w+\s*=/gi, '');
-  
-  // Remove null bytes and control characters
+  result = result.replace(/[<>]/g, "");
+
+  // Remove dangerous protocols iteratively
+  const dangerousProtocols = ["javascript:", "vbscript:", "data:"];
+  let protocolsFound = true;
+  while (protocolsFound) {
+    protocolsFound = false;
+    for (const protocol of dangerousProtocols) {
+      const beforeLength = result.length;
+      result = result.replace(new RegExp(protocol, "gi"), "");
+      if (result.length !== beforeLength) {
+        protocolsFound = true;
+      }
+    }
+  }
+
+  // Remove event handlers iteratively
+  const eventHandlers = [
+    "onclick",
+    "onload",
+    "onerror",
+    "onmouseover",
+    "onmouseout",
+    "onfocus",
+    "onblur",
+  ];
+  let handlersFound = true;
+  while (handlersFound) {
+    handlersFound = false;
+    for (const handler of eventHandlers) {
+      const beforeLength = result.length;
+      result = result.replace(new RegExp(handler + "\\s*=", "gi"), "");
+      if (result.length !== beforeLength) {
+        handlersFound = true;
+      }
+    }
+  }
+
+  // Remove control characters and null bytes
   // eslint-disable-next-line no-control-regex
-  sanitized = sanitized.replace(/\x00/g, '');
-  // eslint-disable-next-line no-control-regex
-  sanitized = sanitized.replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-  
-  // Limit length to prevent DoS
-  return sanitized.substring(0, 10000);
+  result = result.replace(/[\x00-\x1F\x7F]/g, "");
+
+  return result;
 };
 
 const sanitizeObject = (obj: any, depth: number = 0): any => {
@@ -117,51 +157,53 @@ const sanitizeObject = (obj: any, depth: number = 0): any => {
   if (depth > 10) {
     return {};
   }
-  
+
   if (obj === null || obj === undefined) {
     return obj;
   }
-  
-  if (typeof obj === 'string') {
+
+  if (typeof obj === "string") {
     return sanitizeString(obj);
   }
-  
-  if (typeof obj === 'number' || typeof obj === 'boolean') {
+
+  if (typeof obj === "number" || typeof obj === "boolean") {
     return obj;
   }
-  
+
   if (Array.isArray(obj)) {
     // Limit array size to prevent DoS
-    return obj.slice(0, 1000).map(item => sanitizeObject(item, depth + 1));
+    return obj.slice(0, 1000).map((item) => sanitizeObject(item, depth + 1));
   }
-  
-  if (typeof obj === 'object') {
+
+  if (typeof obj === "object") {
     const sanitized: any = {};
     const keys = Object.keys(obj);
-    
+
     // Limit number of keys to prevent DoS
     const limitedKeys = keys.slice(0, 100);
-    
+
     for (const key of limitedKeys) {
       // Sanitize key names to prevent prototype pollution
       const sanitizedKey = sanitizeString(key);
-      
+
       // Prevent prototype pollution
-      if (key === '__proto__' || 
-          key === 'constructor' || 
-          key === 'prototype' ||
-          sanitizedKey === '__proto__' || 
-          sanitizedKey === 'constructor' || 
-          sanitizedKey === 'prototype') {
+      if (
+        key === "__proto__" ||
+        key === "constructor" ||
+        key === "prototype" ||
+        sanitizedKey === "__proto__" ||
+        sanitizedKey === "constructor" ||
+        sanitizedKey === "prototype"
+      ) {
         continue;
       }
-      
+
       sanitized[sanitizedKey] = sanitizeObject(obj[key], depth + 1);
     }
-    
+
     return sanitized;
   }
-  
+
   return obj;
 };
 
@@ -171,59 +213,122 @@ export const sanitizeInput = (
   next: NextFunction,
 ): void => {
   try {
-    // Sanitize request body
-    if (req.body) {
-      req.body = sanitizeObject(req.body);
-    }
-    
-    // Sanitize query parameters
-    if (req.query) {
-      req.query = sanitizeObject(req.query);
-    }
-    
-    // Sanitize URL parameters
-    if (req.params) {
-      req.params = sanitizeObject(req.params);
-    }
-    
-    // Log suspicious input patterns
-    const requestString = JSON.stringify({
+    // Check for suspicious patterns BEFORE sanitization
+    // Use a safe stringify to avoid circular reference issues
+    const safeStringify = (obj: any): string => {
+      try {
+        return JSON.stringify(obj, (key, value) => {
+          if (typeof value === "object" && value !== null) {
+            // Avoid circular references by limiting depth
+            if (
+              key === "self" ||
+              key === "parent" ||
+              key === "window" ||
+              key === "global"
+            ) {
+              return "[Circular]";
+            }
+          }
+          return value;
+        });
+      } catch (error) {
+        return String(obj);
+      }
+    };
+
+    const originalRequestString = safeStringify({
       body: req.body,
       query: req.query,
       params: req.params,
     });
-    
-    // Check for common attack patterns
+
+    // Check for common attack patterns using safe string methods
     const suspiciousPatterns = [
-      /<script/i,
-      /javascript:/i,
-      /vbscript:/i,
-      /on\w+\s*=/i,
-      // eslint-disable-next-line no-control-regex
-      /\x00/,
-      /__proto__/i,
-      /constructor/i,
-      /eval\s*\(/i,
-      /function\s*\(/i,
+      "javascript:",
+      "vbscript:",
+      "__proto__",
+      "constructor",
+      "eval(",
+      "function(",
+      "script",
     ];
-    
+
+    // Check patterns in stringified content
+    let foundPattern = null;
     for (const pattern of suspiciousPatterns) {
-      if (pattern.test(requestString)) {
-        console.warn('Suspicious input detected:', {
-          ip: req.ip,
-          userAgent: req.get('User-Agent'),
-          path: req.path,
-          method: req.method,
-          pattern: pattern.toString(),
-          timestamp: new Date().toISOString(),
-        });
+      if (originalRequestString.toLowerCase().includes(pattern.toLowerCase())) {
+        foundPattern = pattern;
         break;
       }
     }
-    
+
+    // Also check for prototype pollution directly
+    if (!foundPattern) {
+      const checkPrototypePollution = (obj: any): string | null => {
+        if (!obj || typeof obj !== "object") return null;
+
+        // Check for __proto__ property directly (it's not enumerable)
+        if (obj.__proto__ !== Object.prototype && obj.__proto__ !== null) {
+          // If __proto__ has been modified, it's suspicious
+          return "__proto__";
+        }
+
+        // Check for __proto__ as a string key
+        if (obj["__proto__"] !== undefined) {
+          return "__proto__";
+        }
+
+        // Check for constructor pollution
+        if (
+          obj["constructor"] !== undefined &&
+          obj["constructor"] !== obj.constructor
+        ) {
+          return "constructor";
+        }
+
+        // Check for prototype pollution
+        if (obj["prototype"] !== undefined) {
+          return "prototype";
+        }
+
+        return null;
+      };
+
+      foundPattern =
+        checkPrototypePollution(req.body) ||
+        checkPrototypePollution(req.query) ||
+        checkPrototypePollution(req.params);
+    }
+
+    if (foundPattern) {
+      console.warn("Suspicious input detected:", {
+        ip: req.ip,
+        userAgent: req.get("User-Agent"),
+        path: req.path,
+        method: req.method,
+        pattern: foundPattern,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Now sanitize request body
+    if (req.body) {
+      req.body = sanitizeObject(req.body);
+    }
+
+    // Sanitize query parameters
+    if (req.query) {
+      req.query = sanitizeObject(req.query);
+    }
+
+    // Sanitize URL parameters
+    if (req.params) {
+      req.params = sanitizeObject(req.params);
+    }
+
     next();
   } catch (error) {
-    console.error('Input sanitization error:', error);
-    res.status(400).json({ error: 'Invalid input format' });
+    console.error("Input sanitization error:", error);
+    res.status(400).json({ error: "Invalid input format" });
   }
 };

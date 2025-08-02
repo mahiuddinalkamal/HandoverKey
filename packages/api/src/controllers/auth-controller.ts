@@ -51,19 +51,27 @@ export class AuthController {
       const email = req.body.email;
       const password = req.body.password;
       const confirmPassword = req.body.confirmPassword;
-      
+
       // Validate input types to prevent bypass
-      if (typeof email !== 'string' || typeof password !== 'string' || typeof confirmPassword !== 'string') {
+      if (
+        typeof email !== "string" ||
+        typeof password !== "string" ||
+        typeof confirmPassword !== "string"
+      ) {
         res.status(400).json({ error: "Invalid input format" });
         return;
       }
-      
+
       // Additional server-side validation that cannot be bypassed
-      if (email.length === 0 || password.length === 0 || confirmPassword.length === 0) {
+      if (
+        email.length === 0 ||
+        password.length === 0 ||
+        confirmPassword.length === 0
+      ) {
         res.status(400).json({ error: "All fields are required" });
         return;
       }
-      
+
       // Ensure passwords match (server-side check)
       if (password !== confirmPassword) {
         res.status(400).json({ error: "Passwords do not match" });
@@ -151,13 +159,13 @@ export class AuthController {
       const email = req.body.email;
       const password = req.body.password;
       const twoFactorCode = req.body.twoFactorCode;
-      
+
       // Validate input types to prevent bypass
-      if (typeof email !== 'string' || typeof password !== 'string') {
+      if (typeof email !== "string" || typeof password !== "string") {
         res.status(400).json({ error: "Invalid input format" });
         return;
       }
-      
+
       // Additional input sanitization
       if (email.length === 0 || password.length === 0) {
         res.status(401).json({ error: "Invalid email or password" });
@@ -195,18 +203,32 @@ export class AuthController {
       }
 
       // Secure 2FA check - prevent bypass attempts
-      if (user.twoFactorEnabled) {
-        // 2FA is required - validate the code
-        if (!twoFactorCode || typeof twoFactorCode !== 'string' || twoFactorCode.trim().length === 0) {
+      if (user.twoFactorEnabled === true) {
+        // 2FA is required - validate the code strictly
+        if (
+          !twoFactorCode ||
+          typeof twoFactorCode !== "string" ||
+          twoFactorCode.trim().length === 0 ||
+          twoFactorCode.length !== 6
+        ) {
           res.status(401).json({
             error: "Two-factor authentication required",
             requires2FA: true,
           });
           return;
         }
-        
+
+        // Validate 2FA code format (6 digits only)
+        if (!/^\d{6}$/.test(twoFactorCode.trim())) {
+          res.status(401).json({
+            error: "Invalid two-factor authentication code",
+            requires2FA: true,
+          });
+          return;
+        }
+
         // TODO: Add actual 2FA code verification here
-        // For now, we require the code to be present but don't verify it
+        // For now, we require the code to be present and properly formatted
         // This should be implemented with proper TOTP verification
       }
 

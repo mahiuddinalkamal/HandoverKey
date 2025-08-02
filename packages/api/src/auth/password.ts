@@ -57,12 +57,21 @@ export class PasswordUtils {
     let password = "";
 
     // Use cryptographically secure random bytes instead of Math.random()
-    const secureRandomBytes = randomBytes(length);
-    
+
+    // Use rejection sampling to avoid modulo bias
     for (let i = 0; i < length; i++) {
-      // Use secure random bytes to select characters
-      const randomIndex = secureRandomBytes[i] % charset.length;
-      password += charset[randomIndex];
+      let randomIndex: number;
+
+      do {
+        // Generate a fresh random byte for each character to avoid bias
+        const singleByte = randomBytes(1);
+        randomIndex = singleByte[0];
+      } while (
+        randomIndex >=
+        Math.floor(256 / charset.length) * charset.length
+      );
+
+      password += charset[randomIndex % charset.length];
     }
 
     return password;
