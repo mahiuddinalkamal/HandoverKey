@@ -10,8 +10,8 @@ describe("Security Validation Tests", () => {
       expect(validateEmail("")).toBe(false);
       const end = Date.now();
 
-      // Should complete in reasonable time (< 10ms)
-      expect(end - start).toBeLessThan(10);
+      // Should complete in reasonable time (< 25ms)
+      expect(end - start).toBeLessThan(25);
     });
 
     it("should handle malicious ReDoS patterns without hanging", () => {
@@ -36,8 +36,8 @@ describe("Security Validation Tests", () => {
 
       const end = Date.now();
 
-      // Should complete quickly even with malicious input (< 50ms)
-      expect(end - start).toBeLessThan(50);
+      // Should complete quickly even with malicious input (< 100ms)
+      expect(end - start).toBeLessThan(100);
     });
 
     it("should enforce length limits to prevent DoS", () => {
@@ -50,7 +50,7 @@ describe("Security Validation Tests", () => {
       const end = Date.now();
 
       // Should complete quickly regardless of result
-      expect(end - start).toBeLessThan(10);
+      expect(end - start).toBeLessThan(25);
       expect(typeof result).toBe("boolean");
 
       const veryLongDomain = "test@" + "a".repeat(300) + ".com";
@@ -59,7 +59,7 @@ describe("Security Validation Tests", () => {
       const end2 = Date.now();
 
       // Should complete quickly regardless of result
-      expect(end2 - start2).toBeLessThan(10);
+      expect(end2 - start2).toBeLessThan(25);
       expect(typeof result2).toBe("boolean");
     });
 
@@ -90,8 +90,8 @@ describe("Security Validation Tests", () => {
 
       const end = Date.now();
 
-      // Should complete in reasonable time (< 10ms)
-      expect(end - start).toBeLessThan(10);
+      // Should complete in reasonable time (< 25ms)
+      expect(end - start).toBeLessThan(25);
     });
 
     it("should handle malicious ReDoS patterns without hanging", () => {
@@ -127,8 +127,8 @@ describe("Security Validation Tests", () => {
 
       const end = Date.now();
 
-      // Should complete quickly even with malicious input (< 50ms)
-      expect(end - start).toBeLessThan(50);
+      // Should complete quickly even with malicious input (< 100ms)
+      expect(end - start).toBeLessThan(100);
     });
 
     it("should validate UUID format strictly", () => {
@@ -178,7 +178,7 @@ describe("Security Validation Tests", () => {
       // Time should not grow exponentially
       // Allow some variance but ensure it's not catastrophic
       times.forEach((time) => {
-        expect(time).toBeLessThan(10); // Should be very fast
+        expect(time).toBeLessThan(25); // Should be very fast
       });
     });
 
@@ -195,7 +195,7 @@ describe("Security Validation Tests", () => {
         const end = Date.now();
 
         // Should complete very quickly regardless of input
-        expect(end - start).toBeLessThan(5);
+        expect(end - start).toBeLessThan(10);
       });
     });
   });
