@@ -23,7 +23,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       const now = new Date();
       const gracePeriodEnds = new Date(
         now.getTime() +
-          HandoverOrchestrator.GRACE_PERIOD_HOURS * 60 * 60 * 1000,
+        HandoverOrchestrator.GRACE_PERIOD_HOURS * 60 * 60 * 1000,
       );
 
       // Create new handover process
