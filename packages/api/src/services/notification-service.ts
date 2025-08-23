@@ -70,10 +70,13 @@ export class NotificationService implements INotificationService {
         errorMessage: result.errorMessage,
       };
     } catch (error) {
-      console.error(
-        `Failed to send ${reminderType} reminder to user ${userId}:`,
-        error,
-      );
+      // Only log errors in non-test environments
+      if (process.env.NODE_ENV !== 'test') {
+        console.error(
+          `Failed to send ${reminderType} reminder to user ${userId}:`,
+          error,
+        );
+      }
 
       // Record failed delivery
       await this.recordNotificationDelivery({
@@ -110,7 +113,10 @@ export class NotificationService implements INotificationService {
       try {
         const successor = await this.getSuccessorById(successorId);
         if (!successor) {
-          console.error(`Successor ${successorId} not found`);
+          // Only log errors in non-test environments
+          if (process.env.NODE_ENV !== 'test') {
+            console.error(`Successor ${successorId} not found`);
+          }
           continue;
         }
 
@@ -144,10 +150,13 @@ export class NotificationService implements INotificationService {
           errorMessage: result.errorMessage,
         });
       } catch (error) {
-        console.error(
-          `Failed to send handover alert to successor ${successorId}:`,
-          error,
-        );
+        // Only log errors in non-test environments
+        if (process.env.NODE_ENV !== 'test') {
+          console.error(
+            `Failed to send handover alert to successor ${successorId}:`,
+            error,
+          );
+        }
 
         results.push({
           id: `failed-${Date.now()}-${successorId}`,
@@ -235,7 +244,10 @@ export class NotificationService implements INotificationService {
         remainingTime: new Date(tokenData.expires_at).getTime() - Date.now(),
       };
     } catch (error) {
-      console.error("Error validating check-in token:", error);
+      // Only log errors in non-test environments
+      if (process.env.NODE_ENV !== 'test') {
+        console.error("Error validating check-in token:", error);
+      }
       return {
         isValid: false,
         error: "Failed to validate check-in token",

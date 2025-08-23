@@ -49,13 +49,16 @@ class RateLimitManager {
     }
 
     // Log to console for monitoring - use safe logging format
-    console.warn("Security Event:", {
-      reason: reason,
-      ip: event.ip,
-      endpoint: event.endpoint,
-      timestamp: new Date(event.timestamp).toISOString(),
-      userAgent: event.userAgent,
-    });
+    // Only log in non-test environments
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn("Security Event:", {
+        reason: reason,
+        ip: event.ip,
+        endpoint: event.endpoint,
+        timestamp: new Date(event.timestamp).toISOString(),
+        userAgent: event.userAgent,
+      });
+    }
   }
 
   checkRateLimit(

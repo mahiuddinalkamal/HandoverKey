@@ -88,7 +88,10 @@ app.use(
     res: express.Response,
     _next: express.NextFunction,
   ) => {
-    console.error("Unhandled error:", error);
+    // Only log errors in non-test environments
+    if (process.env.NODE_ENV !== 'test') {
+      console.error("Unhandled error:", error);
+    }
 
     if (error.type === "entity.parse.failed") {
       res.status(400).json({ error: "Invalid JSON payload" });
