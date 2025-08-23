@@ -87,6 +87,13 @@ export class ActivityMiddleware {
   }
 
   /**
+   * Middleware specifically for settings access
+   */
+  static trackSettingsAccess() {
+    return ActivityMiddleware.trackActivity(ActivityType.SETTINGS_CHANGE);
+  }
+
+  /**
    * Manual check-in endpoint handler
    */
   static async handleManualCheckIn(req: AuthenticatedRequest, res: Response) {

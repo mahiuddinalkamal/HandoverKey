@@ -12,6 +12,7 @@ import {
 import authRoutes from "./routes/auth-routes";
 import vaultRoutes from "./routes/vault-routes";
 import activityRoutes from "./routes/activity-routes";
+import inactivityRoutes from "./routes/inactivity-routes";
 import { JobManager } from "./services/job-manager";
 
 dotenv.config();
@@ -72,6 +73,7 @@ app.get("/health", async (req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/vault", vaultRoutes);
 app.use("/api/v1/activity", activityRoutes);
+app.use("/api/v1/inactivity", inactivityRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {
