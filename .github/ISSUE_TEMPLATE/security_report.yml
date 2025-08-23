@@ -1,4 +1,4 @@
-name: 🔒 Security Report
+name: Security Report
 description: Report a security vulnerability (use private reporting for sensitive issues)
 title: "[Security]: "
 labels: ["security", "needs-triage"]
