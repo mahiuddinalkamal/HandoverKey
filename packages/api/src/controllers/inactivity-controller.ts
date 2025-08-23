@@ -9,7 +9,10 @@ export class InactivityController {
   /**
    * Get user's inactivity settings
    */
-  static async getSettings(req: AuthenticatedRequest, res: Response): Promise<void> {
+  static async getSettings(
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> {
     try {
       const userId = req.user?.userId;
       if (!userId) {
@@ -51,7 +54,10 @@ export class InactivityController {
   /**
    * Update user's inactivity threshold
    */
-  static async updateThreshold(req: AuthenticatedRequest, res: Response): Promise<void> {
+  static async updateThreshold(
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -68,8 +74,11 @@ export class InactivityController {
       const { threshold_days } = req.body;
 
       // Get current settings to log the change
-      const currentQuery = "SELECT threshold_days FROM inactivity_settings WHERE user_id = $1";
-      const currentResult = await DatabaseConnection.query(currentQuery, [userId]);
+      const currentQuery =
+        "SELECT threshold_days FROM inactivity_settings WHERE user_id = $1";
+      const currentResult = await DatabaseConnection.query(currentQuery, [
+        userId,
+      ]);
       const oldThreshold = currentResult.rows[0]?.threshold_days;
 
       // Update threshold
@@ -80,31 +89,45 @@ export class InactivityController {
         RETURNING threshold_days, updated_at
       `;
 
-      const result = await DatabaseConnection.query(updateQuery, [userId, threshold_days]);
+      const result = await DatabaseConnection.query(updateQuery, [
+        userId,
+        threshold_days,
+      ]);
 
       if (result.rows.length === 0) {
         // Create settings if they don't exist
         await InactivityController.createDefaultSettings(userId);
-        const retryResult = await DatabaseConnection.query(updateQuery, [userId, threshold_days]);
-        
+        const retryResult = await DatabaseConnection.query(updateQuery, [
+          userId,
+          threshold_days,
+        ]);
+
         // Log the threshold change for audit
-        await InactivityController.logThresholdChange(userId, null, threshold_days);
-        
+        await InactivityController.logThresholdChange(
+          userId,
+          null,
+          threshold_days,
+        );
+
         res.json({
           message: "Threshold updated successfully",
           threshold_days: retryResult.rows[0].threshold_days,
-          updated_at: retryResult.rows[0].updated_at
+          updated_at: retryResult.rows[0].updated_at,
         });
         return;
       }
 
       // Log the threshold change for audit
-      await InactivityController.logThresholdChange(userId, oldThreshold, threshold_days);
+      await InactivityController.logThresholdChange(
+        userId,
+        oldThreshold,
+        threshold_days,
+      );
 
       res.json({
         message: "Threshold updated successfully",
         threshold_days: result.rows[0].threshold_days,
-        updated_at: result.rows[0].updated_at
+        updated_at: result.rows[0].updated_at,
       });
     } catch (error) {
       console.error("Error updating threshold:", error);
@@ -115,7 +138,10 @@ export class InactivityController {
   /**
    * Update notification methods
    */
-  static async updateNotificationMethods(req: AuthenticatedRequest, res: Response): Promise<void> {
+  static async updateNotificationMethods(
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -138,17 +164,23 @@ export class InactivityController {
         RETURNING notification_methods, updated_at
       `;
 
-      const result = await DatabaseConnection.query(updateQuery, [userId, notification_methods]);
+      const result = await DatabaseConnection.query(updateQuery, [
+        userId,
+        notification_methods,
+      ]);
 
       if (result.rows.length === 0) {
         // Create settings if they don't exist
         await InactivityController.createDefaultSettings(userId);
-        const retryResult = await DatabaseConnection.query(updateQuery, [userId, notification_methods]);
-        
+        const retryResult = await DatabaseConnection.query(updateQuery, [
+          userId,
+          notification_methods,
+        ]);
+
         res.json({
           message: "Notification methods updated successfully",
           notification_methods: retryResult.rows[0].notification_methods,
-          updated_at: retryResult.rows[0].updated_at
+          updated_at: retryResult.rows[0].updated_at,
         });
         return;
       }
@@ -156,7 +188,7 @@ export class InactivityController {
       res.json({
         message: "Notification methods updated successfully",
         notification_methods: result.rows[0].notification_methods,
-        updated_at: result.rows[0].updated_at
+        updated_at: result.rows[0].updated_at,
       });
     } catch (error) {
       console.error("Error updating notification methods:", error);
@@ -194,7 +226,7 @@ export class InactivityController {
       VALUES ($1, 90, ARRAY['email'])
       ON CONFLICT (user_id) DO NOTHING
     `;
-    
+
     await DatabaseConnection.query(insertQuery, [userId]);
   }
 
@@ -202,9 +234,9 @@ export class InactivityController {
    * Log threshold changes for audit trail
    */
   private static async logThresholdChange(
-    userId: string, 
-    oldThreshold: number | null, 
-    newThreshold: number
+    userId: string,
+    oldThreshold: number | null,
+    newThreshold: number,
   ): Promise<void> {
     try {
       const activityService = new ActivityService();
@@ -214,8 +246,8 @@ export class InactivityController {
         {
           setting: "threshold_days",
           old_value: oldThreshold,
-          new_value: newThreshold
-        }
+          new_value: newThreshold,
+        },
       );
     } catch (error) {
       console.error("Error logging threshold change:", error);

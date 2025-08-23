@@ -294,7 +294,7 @@ describe("Enhanced Input Sanitization", () => {
 
       expect(mockNext).toHaveBeenCalled();
       // The sanitization should complete without errors
-      expect(typeof mockRequest.body.code).toBe('string');
+      expect(typeof mockRequest.body.code).toBe("string");
     });
   });
 

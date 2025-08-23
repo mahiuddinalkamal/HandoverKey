@@ -47,7 +47,7 @@ export class InactivityMonitorService implements InactivityMonitor {
     // Run initial check
     this.checkAllUsers().catch((error) => {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Initial inactivity check failed:", error);
       }
     });
@@ -56,7 +56,7 @@ export class InactivityMonitorService implements InactivityMonitor {
     this.intervalId = global.setInterval(() => {
       this.checkAllUsers().catch((error) => {
         // Only log errors in non-test environments
-        if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== "test") {
           console.error("Periodic inactivity check failed:", error);
         }
       });
@@ -116,7 +116,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       );
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error(`Failed to check inactivity for user ${userId}:`, error);
       }
       // Continue processing other users even if one fails
@@ -152,7 +152,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       console.log("Completed inactivity check for all users");
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Failed to check inactivity for all users:", error);
       }
     }
@@ -167,7 +167,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       console.log(`System tracking paused: ${reason}`);
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Failed to pause system tracking:", error);
       }
       throw error;
@@ -186,7 +186,7 @@ export class InactivityMonitorService implements InactivityMonitor {
       console.log("System tracking resumed");
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Failed to resume system tracking:", error);
       }
       throw error;

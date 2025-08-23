@@ -81,7 +81,7 @@ export const requireAuth = async (
     next();
   } catch (error) {
     // Only log errors in non-test environments
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== "test") {
       console.error("Authentication validation error:", error);
     }
     res.status(401).json({ error: "Authentication required" });

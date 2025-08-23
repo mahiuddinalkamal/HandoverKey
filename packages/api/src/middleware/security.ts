@@ -302,7 +302,7 @@ export const sanitizeInput = (
 
     if (foundPattern) {
       // Only log warnings in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.warn("Suspicious input detected:", {
           ip: req.ip,
           userAgent: req.get("User-Agent"),
@@ -332,7 +332,7 @@ export const sanitizeInput = (
     next();
   } catch (error) {
     // Only log errors in non-test environments
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== "test") {
       console.error("Input sanitization error:", error);
     }
     res.status(400).json({ error: "Invalid input format" });

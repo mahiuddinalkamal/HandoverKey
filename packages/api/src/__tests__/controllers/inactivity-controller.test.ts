@@ -8,8 +8,12 @@ import { AuthenticatedRequest } from "../../middleware/auth";
 jest.mock("@handoverkey/database");
 jest.mock("../../services/activity-service");
 
-const mockDatabaseConnection = DatabaseConnection as jest.Mocked<typeof DatabaseConnection>;
-const mockActivityService = ActivityService as jest.MockedClass<typeof ActivityService>;
+const mockDatabaseConnection = DatabaseConnection as jest.Mocked<
+  typeof DatabaseConnection
+>;
+const mockActivityService = ActivityService as jest.MockedClass<
+  typeof ActivityService
+>;
 
 describe("InactivityController", () => {
   let mockRequest: Partial<AuthenticatedRequest>;
@@ -20,16 +24,16 @@ describe("InactivityController", () => {
   beforeEach(() => {
     mockJson = jest.fn();
     mockStatus = jest.fn().mockReturnValue({ json: mockJson });
-    
+
     mockRequest = {
-      user: { 
+      user: {
         userId: "user-123",
         email: "test@example.com",
-        sessionId: "session-123"
+        sessionId: "session-123",
       },
       body: {},
     };
-    
+
     mockResponse = {
       json: mockJson,
       status: mockStatus,
@@ -55,11 +59,14 @@ describe("InactivityController", () => {
         rows: [mockSettings],
       } as any);
 
-      await InactivityController.getSettings(mockRequest as AuthenticatedRequest, mockResponse as Response);
+      await InactivityController.getSettings(
+        mockRequest as AuthenticatedRequest,
+        mockResponse as Response,
+      );
 
       expect(mockDatabaseConnection.query).toHaveBeenCalledWith(
         expect.stringContaining("SELECT"),
-        ["user-123"]
+        ["user-123"],
       );
       expect(mockJson).toHaveBeenCalledWith(mockSettings);
     });
@@ -67,10 +74,15 @@ describe("InactivityController", () => {
     it("should handle unauthenticated user", async () => {
       mockRequest.user = undefined;
 
-      await InactivityController.getSettings(mockRequest as AuthenticatedRequest, mockResponse as Response);
+      await InactivityController.getSettings(
+        mockRequest as AuthenticatedRequest,
+        mockResponse as Response,
+      );
 
       expect(mockStatus).toHaveBeenCalledWith(401);
-      expect(mockJson).toHaveBeenCalledWith({ error: "User not authenticated" });
+      expect(mockJson).toHaveBeenCalledWith({
+        error: "User not authenticated",
+      });
     });
   });
 
@@ -98,13 +110,18 @@ describe("InactivityController", () => {
       const mockActivityServiceInstance = {
         recordActivity: jest.fn(),
       };
-      mockActivityService.mockImplementation(() => mockActivityServiceInstance as any);
+      mockActivityService.mockImplementation(
+        () => mockActivityServiceInstance as any,
+      );
 
-      await InactivityController.updateThreshold(mockRequest as AuthenticatedRequest, mockResponse as Response);
+      await InactivityController.updateThreshold(
+        mockRequest as AuthenticatedRequest,
+        mockResponse as Response,
+      );
 
       expect(mockDatabaseConnection.query).toHaveBeenCalledWith(
         expect.stringContaining("UPDATE inactivity_settings"),
-        ["user-123", 120]
+        ["user-123", 120],
       );
       expect(mockJson).toHaveBeenCalledWith({
         message: "Threshold updated successfully",

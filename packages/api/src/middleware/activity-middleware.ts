@@ -45,7 +45,7 @@ export class ActivityMiddleware {
             );
           } catch (error) {
             // Only log errors in non-test environments
-            if (process.env.NODE_ENV !== 'test') {
+            if (process.env.NODE_ENV !== "test") {
               console.error("Failed to record activity:", error);
             }
             // Don't fail the request if activity tracking fails
@@ -55,7 +55,7 @@ export class ActivityMiddleware {
         next();
       } catch (error) {
         // Only log errors in non-test environments
-        if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== "test") {
           console.error("Activity middleware error:", error);
         }
         // Don't fail the request if activity tracking fails
@@ -141,7 +141,7 @@ export class ActivityMiddleware {
       });
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Manual check-in error:", error);
       }
       res.status(500).json({ error: "Failed to record check-in" });
@@ -174,7 +174,7 @@ export class ActivityMiddleware {
       });
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Get activity status error:", error);
       }
       res.status(500).json({ error: "Failed to get activity status" });
@@ -230,7 +230,7 @@ export class ActivityMiddleware {
       });
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Get activity history error:", error);
       }
       res.status(500).json({ error: "Failed to get activity history" });

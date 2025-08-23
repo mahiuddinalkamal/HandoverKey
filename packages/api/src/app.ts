@@ -89,7 +89,7 @@ app.use(
     _next: express.NextFunction,
   ) => {
     // Only log errors in non-test environments
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== "test") {
       console.error("Unhandled error:", error);
     }
 

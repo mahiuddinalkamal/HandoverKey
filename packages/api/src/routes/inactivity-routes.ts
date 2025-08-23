@@ -21,7 +21,7 @@ router.get("/settings", InactivityController.getSettings);
 /**
  * Update user's inactivity threshold
  * PUT /api/v1/inactivity/threshold
- * 
+ *
  * Body:
  * {
  *   "threshold_days": 90
@@ -30,13 +30,13 @@ router.get("/settings", InactivityController.getSettings);
 router.put(
   "/threshold",
   InactivityController.updateThresholdValidation,
-  InactivityController.updateThreshold
+  InactivityController.updateThreshold,
 );
 
 /**
  * Update user's notification methods
  * PUT /api/v1/inactivity/notifications
- * 
+ *
  * Body:
  * {
  *   "notification_methods": ["email", "sms"]
@@ -45,7 +45,7 @@ router.put(
 router.put(
   "/notifications",
   InactivityController.updateNotificationMethodsValidation,
-  InactivityController.updateNotificationMethods
+  InactivityController.updateNotificationMethods,
 );
 
 export default router;

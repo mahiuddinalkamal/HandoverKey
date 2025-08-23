@@ -44,7 +44,7 @@ export class SessionService {
       return true;
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Session validation error:", error);
       }
       return false;

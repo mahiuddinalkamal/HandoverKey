@@ -71,7 +71,7 @@ export class NotificationService implements INotificationService {
       };
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error(
           `Failed to send ${reminderType} reminder to user ${userId}:`,
           error,
@@ -114,7 +114,7 @@ export class NotificationService implements INotificationService {
         const successor = await this.getSuccessorById(successorId);
         if (!successor) {
           // Only log errors in non-test environments
-          if (process.env.NODE_ENV !== 'test') {
+          if (process.env.NODE_ENV !== "test") {
             console.error(`Successor ${successorId} not found`);
           }
           continue;
@@ -151,7 +151,7 @@ export class NotificationService implements INotificationService {
         });
       } catch (error) {
         // Only log errors in non-test environments
-        if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== "test") {
           console.error(
             `Failed to send handover alert to successor ${successorId}:`,
             error,
@@ -245,7 +245,7 @@ export class NotificationService implements INotificationService {
       };
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Error validating check-in token:", error);
       }
       return {

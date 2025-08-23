@@ -23,7 +23,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       const now = new Date();
       const gracePeriodEnds = new Date(
         now.getTime() +
-        HandoverOrchestrator.GRACE_PERIOD_HOURS * 60 * 60 * 1000,
+          HandoverOrchestrator.GRACE_PERIOD_HOURS * 60 * 60 * 1000,
       );
 
       // Create new handover process
@@ -63,7 +63,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       return handoverProcess;
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error(`Failed to initiate handover for user ${userId}:`, error);
       }
       throw error;
@@ -101,7 +101,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       // TODO: Send cancellation notifications to successors if they were already notified
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error(`Failed to cancel handover for user ${userId}:`, error);
       }
       throw error;
@@ -133,7 +133,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       await DatabaseConnection.query(query, [handoverId, successorId]);
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error(
           `Failed to process successor response for handover ${handoverId}:`,
           error,
@@ -151,8 +151,11 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       return await this.getActiveHandover(userId);
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
-        console.error(`Failed to get handover status for user ${userId}:`, error);
+      if (process.env.NODE_ENV !== "test") {
+        console.error(
+          `Failed to get handover status for user ${userId}:`,
+          error,
+        );
       }
       return null;
     }
@@ -191,7 +194,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       // TODO: Begin successor verification process
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error(
           `Failed to process grace period expiration for handover ${handoverId}:`,
           error,
@@ -222,7 +225,7 @@ export class HandoverOrchestrator implements IHandoverOrchestrator {
       );
     } catch (error) {
       // Only log errors in non-test environments
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== "test") {
         console.error("Failed to get handovers needing attention:", error);
       }
       return [];
