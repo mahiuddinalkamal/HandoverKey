@@ -313,8 +313,6 @@ describe("Comprehensive Security Test Suite", () => {
     let mockRequest: Partial<Request>;
     let mockResponse: Partial<Response>;
     let mockNext: jest.Mock;
-    let consoleSpy: jest.SpyInstance;
-
     beforeEach(() => {
       mockRequest = {
         ip: "192.168.1.1",
@@ -332,11 +330,6 @@ describe("Comprehensive Security Test Suite", () => {
       };
 
       mockNext = jest.fn();
-      consoleSpy = jest.spyOn(console, "warn").mockImplementation();
-    });
-
-    afterEach(() => {
-      consoleSpy.mockRestore();
     });
 
     describe("XSS Prevention", () => {
@@ -420,7 +413,7 @@ describe("Comprehensive Security Test Suite", () => {
     });
 
     describe("Suspicious Pattern Detection", () => {
-      it("should log suspicious patterns", () => {
+      it("should handle suspicious patterns", () => {
         const suspiciousInputs = [
           { malicious: '<script>alert("xss")</script>' },
           { link: 'javascript:alert("xss")' },
@@ -440,7 +433,6 @@ describe("Comprehensive Security Test Suite", () => {
 
           // The sanitization should complete without errors
           expect(mockNext).toHaveBeenCalled();
-          // Note: Logging may or may not occur depending on the exact pattern matching
         });
       });
     });
