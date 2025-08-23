@@ -3,7 +3,7 @@ import { body, validationResult } from "express-validator";
 import { DatabaseConnection } from "@handoverkey/database";
 import { ActivityService } from "../services/activity-service";
 import { AuthenticatedRequest } from "../middleware/auth";
-import { ActivityType, ClientType } from "@handoverkey/shared/src/types/dead-mans-switch";
+import { ActivityType } from "@handoverkey/shared/src/types/dead-mans-switch";
 
 export class InactivityController {
   /**
