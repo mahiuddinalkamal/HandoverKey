@@ -44,8 +44,6 @@ export class VaultEncryptionService {
         tags: entry.tags,
       };
 
-      // Note: We need to include the salt in the vault entry
-      // For now, we'll store it as part of the encrypted data format
       const entryWithSalt: VaultEntryData = {
         ...vaultEntryData,
         encryptedData: `${encrypted.salt}:${encrypted.encryptedData}`,
