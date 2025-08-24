@@ -68,6 +68,13 @@ This guide provides instructions for deploying the HandoverKey application. It c
 
 7. **Access the web application:**
    Open your browser and navigate to `http://localhost:3000` (or the port configured in `apps/web/vite.config.ts`).
+   
+   The web application includes:
+   - Complete vault management interface
+   - Client-side encryption for all data
+   - Tag management and search functionality
+   - Statistics dashboard
+   - Responsive design for all devices
 
 ### 2.3 Stopping Services
 
@@ -96,9 +103,14 @@ A staging environment mirrors the production environment and is used for testing
    - Ensure each microservice (`api`, `web`, etc.) has a `Dockerfile`.
    - Build Docker images for each service:
      ```bash
-     docker build -t your-registry/api:latest -f apps/api/Dockerfile .
-     docker build -t your-registry/web:latest -f apps/web/Dockerfile .
-     # ... for other services
+     # API service (Node.js backend)
+     docker build -t your-registry/handoverkey-api:latest -f packages/api/Dockerfile .
+     
+     # Web application (React frontend)
+     docker build -t your-registry/handoverkey-web:latest -f apps/web/Dockerfile .
+     
+     # Core services
+     docker build -t your-registry/handoverkey-core:latest -f packages/core/Dockerfile .
      ```
 
 2. **Push Images to Registry:**
@@ -173,18 +185,7 @@ Production deployment requires robust infrastructure, security, and monitoring.
 - **Canary Releases**: Gradually roll out new versions to a small subset of users.
 - **Automated Rollbacks**: Ability to quickly revert to a previous stable version if issues arise.
 
-## 5. Post-Deployment Checklist
-
-- [ ] Verify all services are running and healthy.
-- [ ] Check logs for any errors or warnings.
-- [ ] Test core functionalities (registration, login, vault operations, check-in).
-- [ ] Confirm monitoring and alerting systems are active.
-- [ ] Perform a basic security scan.
-- [ ] Ensure backups are configured and running.
-- [ ] Validate TLS certificates.
-- [ ] Check rate limiting and other security controls.
-
 ---
 
-**Last Updated**: July 26, 2025
+**Last Updated**: Aug 24, 2025
 **Version**: 1.0
