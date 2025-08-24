@@ -33,6 +33,16 @@ export default [
         localStorage: "readonly",
         sessionStorage: "readonly",
         URLSearchParams: "readonly",
+        // Browser APIs
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        btoa: "readonly",
+        atob: "readonly",
+        crypto: "readonly",
+        // HTML Element constructors
+        HTMLInputElement: "readonly",
+        HTMLDivElement: "readonly",
+        HTMLSelectElement: "readonly",
       },
     },
     plugins: {
@@ -67,6 +77,7 @@ export default [
       "**/*.test.tsx",
       "**/__tests__/**/*.ts",
       "**/__tests__/**/*.tsx",
+      "**/setupTests.ts",
     ],
     languageOptions: {
       parser: tsparser,
@@ -93,6 +104,16 @@ export default [
         localStorage: "readonly",
         sessionStorage: "readonly",
         URLSearchParams: "readonly",
+        // Browser APIs
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        btoa: "readonly",
+        atob: "readonly",
+        crypto: "readonly",
+        // HTML Element constructors
+        HTMLInputElement: "readonly",
+        HTMLDivElement: "readonly",
+        HTMLSelectElement: "readonly",
         // Jest globals
         jest: "readonly",
         describe: "readonly",

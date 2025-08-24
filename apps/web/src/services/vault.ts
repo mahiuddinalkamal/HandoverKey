@@ -3,6 +3,7 @@ import api from "./api";
 export interface VaultEntryData {
   encryptedData: string;
   iv: string;
+  salt?: string;
   algorithm: string;
   category?: string;
   tags?: string[];

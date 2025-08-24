@@ -81,7 +81,7 @@ If you're looking to make your first contribution, look for issues labeled `good
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/mahiuddinalkamal/handoverkey.git
+    git clone https://github.com/handoverkey/handoverkey.git
     cd handoverkey
     ```
 
@@ -124,19 +124,32 @@ If you're looking to make your first contribution, look for issues labeled `good
 
 ### 3.3 Running Tests
 
-To run tests for a specific package (e.g., `@handoverkey/core`):
+To run tests for a specific package:
 
 ```bash
+# Web application tests (184 tests)
+npm test --workspace=@handoverkey/web
+
+# API tests (187 tests)
+npm test --workspace=@handoverkey/api
+
+# Core encryption tests (52 tests)
 npm test --workspace=@handoverkey/core
+
+# All other packages
+npm test --workspace=@handoverkey/database
+npm test --workspace=@handoverkey/shared
 ```
 
-To run all tests:
+To run all tests across the entire monorepo:
 
 ```bash
 npm test
 ```
 
-Ensure all tests pass before submitting a pull request.
+**Current Test Status**: 423+ tests passing across all packages.
+
+Ensure all tests pass before submitting a pull request. New features should include comprehensive test coverage.
 
 ### 3.4 Code Style
 
@@ -158,12 +171,15 @@ The project is a monorepo managed with [Turborepo](https://turbo.build/).
 ```
 handoverkey/
 ├── apps/
-│   ├── web/                 # React web application
-│   ├── mobile/              # React Native mobile app
-│   └── cli/                 # Command-line interface
+│   └── web/                 # React web application (production-ready)
+│       ├── src/
+│       │   ├── components/  # Reusable UI components
+│       │   ├── pages/       # Application pages
+│       │   ├── services/    # API and encryption services
+│       │   └── __tests__/   # Test files (184 tests)
 ├── packages/
 │   ├── core/                # Core encryption and business logic
-│   ├── api/                 # Backend API server
+│   ├── api/                 # Backend API server with dead man's switch
 │   ├── database/            # Database schemas and migrations
 │   └── shared/              # Shared types and utilities
 ├── docs/                    # Documentation (architecture, requirements, etc.)
