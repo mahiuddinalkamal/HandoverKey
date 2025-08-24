@@ -86,7 +86,11 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
 
       onSave();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save entry. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save entry. Please try again.",
+      );
       console.error("Save error:", err);
     } finally {
       setLoading(false);
@@ -154,7 +158,8 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
               required
             />
             <p className="mt-1 text-xs text-gray-500">
-              This password will be used to encrypt your data with AES-256-GCM encryption.
+              This password will be used to encrypt your data with AES-256-GCM
+              encryption.
             </p>
           </div>
 
@@ -173,7 +178,8 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
               required
             />
             <p className="mt-1 text-xs text-gray-500">
-              Your data will be encrypted client-side with AES-256-GCM before being sent to the server.
+              Your data will be encrypted client-side with AES-256-GCM before
+              being sent to the server.
             </p>
           </div>
 

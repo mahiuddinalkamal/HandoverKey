@@ -53,7 +53,9 @@ describe("VaultEntryModalWithTagManager", () => {
     expect(screen.getByText("Create New Entry")).toBeInTheDocument();
     expect(screen.getByLabelText("Tag input")).toBeInTheDocument();
     expect(screen.getByText(/Press Enter to add/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Enter password for encryption")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter password for encryption"),
+    ).toBeInTheDocument();
   });
 
   it("allows adding tags using TagManager", async () => {
@@ -102,7 +104,9 @@ describe("VaultEntryModalWithTagManager", () => {
     );
 
     // Add password for encryption
-    const passwordInput = screen.getByPlaceholderText("Enter password for encryption");
+    const passwordInput = screen.getByPlaceholderText(
+      "Enter password for encryption",
+    );
     await user.type(passwordInput, "testpassword123");
 
     // Add some data
@@ -123,7 +127,10 @@ describe("VaultEntryModalWithTagManager", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockEncryptData).toHaveBeenCalledWith("test data", "testpassword123");
+      expect(mockEncryptData).toHaveBeenCalledWith(
+        "test data",
+        "testpassword123",
+      );
       expect(vaultApi.createEntry).toHaveBeenCalledWith(
         expect.objectContaining({
           encryptedData: "mock-encrypted-data",
@@ -180,8 +187,8 @@ describe("VaultEntryModalWithTagManager", () => {
     await user.click(submitButton);
 
     // Wait a bit and verify that the API was not called
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     expect(mockEncryptData).not.toHaveBeenCalled();
     expect(vaultApi.createEntry).not.toHaveBeenCalled();
   });
@@ -216,7 +223,9 @@ describe("VaultEntryModalWithTagManager", () => {
 
   it("handles encryption errors gracefully", async () => {
     const user = userEvent.setup();
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
     mockEncryptData.mockRejectedValue(new Error("Encryption failed"));
 
     render(
@@ -228,7 +237,9 @@ describe("VaultEntryModalWithTagManager", () => {
     );
 
     // Add password and data
-    const passwordInput = screen.getByPlaceholderText("Enter password for encryption");
+    const passwordInput = screen.getByPlaceholderText(
+      "Enter password for encryption",
+    );
     await user.type(passwordInput, "testpassword123");
 
     const dataTextarea = screen.getByPlaceholderText(
