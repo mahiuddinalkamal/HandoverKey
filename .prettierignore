@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Generated files
+*.d.ts
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Cache directories
+.turbo/
+.next/
+.cache/
+
+# Coverage reports
+coverage/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

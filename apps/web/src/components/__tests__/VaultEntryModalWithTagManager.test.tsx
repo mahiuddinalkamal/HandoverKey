@@ -76,7 +76,7 @@ describe("VaultEntryModalWithTagManager", () => {
 
   it("includes tags when creating entry", async () => {
     const user = userEvent.setup();
-    (vaultApi.createEntry as jest.Mock).mockResolvedValue({});
+    (vaultApi.createEntry as any).mockResolvedValue({});
 
     render(
       <VaultEntryModalWithTagManager

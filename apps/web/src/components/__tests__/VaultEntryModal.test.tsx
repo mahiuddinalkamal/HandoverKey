@@ -49,10 +49,8 @@ jest.mock("../TagManager", () => {
   return MockTagManager;
 });
 
-const mockVaultApi = vaultApi as jest.Mocked<typeof vaultApi>;
-const mockEncryptData = encryptionService.encryptData as jest.MockedFunction<
-  typeof encryptionService.encryptData
->;
+const mockVaultApi = vaultApi as any;
+const mockEncryptData = encryptionService.encryptData as any;
 
 describe("VaultEntryModal", () => {
   const defaultProps = {

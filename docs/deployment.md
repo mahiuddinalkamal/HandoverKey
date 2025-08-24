@@ -95,13 +95,14 @@ A staging environment mirrors the production environment and is used for testing
 1. **Containerize Applications:**
    - Ensure each microservice (`api`, `web`, etc.) has a `Dockerfile`.
    - Build Docker images for each service:
+
      ```bash
      # API service (Node.js backend)
      docker build -t your-registry/handoverkey-api:latest -f packages/api/Dockerfile .
-     
+
      # Web application (React frontend)
      docker build -t your-registry/handoverkey-web:latest -f apps/web/Dockerfile .
-     
+
      # Core services
      docker build -t your-registry/handoverkey-core:latest -f packages/core/Dockerfile .
      ```

@@ -16,10 +16,6 @@ const Vault: React.FC = () => {
 
   const categories = ["passwords", "documents", "notes", "keys", "other"];
 
-  useEffect(() => {
-    loadEntries();
-  }, [loadEntries]);
-
   const loadEntries = useCallback(async () => {
     try {
       setLoading(true);
@@ -35,6 +31,10 @@ const Vault: React.FC = () => {
       setLoading(false);
     }
   }, [selectedCategory, searchTerm]);
+
+  useEffect(() => {
+    loadEntries();
+  }, [loadEntries]);
 
   const handleCreateEntry = () => {
     setEditingEntry(null);

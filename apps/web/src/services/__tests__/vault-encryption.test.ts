@@ -18,10 +18,8 @@ jest.mock("../encryption");
 
 describe("VaultEncryptionService", () => {
   let service: VaultEncryptionService;
-  const mockVaultApi = vaultApi as jest.Mocked<typeof vaultApi>;
-  const mockEncryptionService = encryptionService as jest.Mocked<
-    typeof encryptionService
-  >;
+  const mockVaultApi = vaultApi as any;
+  const mockEncryptionService = encryptionService as any;
 
   const testPassword = "testPassword123!";
   const testData = "This is sensitive test data";

@@ -203,7 +203,6 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Automated handover execution with grace periods
   - Successor notification system
 
-
 #### 4.1.5 Notification Service
 
 - **Purpose**: Handle all communication with users

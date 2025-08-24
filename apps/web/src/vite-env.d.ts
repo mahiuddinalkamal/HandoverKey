@@ -18,16 +18,16 @@ declare global {
     atob: typeof globalThis.atob;
     crypto: typeof globalThis.crypto;
   }
-  
+
   const setTimeout: typeof globalThis.setTimeout;
   const clearTimeout: typeof globalThis.clearTimeout;
   const btoa: typeof globalThis.btoa;
   const atob: typeof globalThis.atob;
   const crypto: typeof globalThis.crypto;
-  
+
   // Jest globals
-  const jest: typeof import('jest');
-  
+  const jest: typeof import("jest");
+
   // HTML Element types
   interface HTMLInputElement extends globalThis.HTMLInputElement {}
   interface HTMLDivElement extends globalThis.HTMLDivElement {}
