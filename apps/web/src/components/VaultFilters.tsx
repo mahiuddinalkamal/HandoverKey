@@ -108,7 +108,7 @@ const VaultFilters: React.FC<VaultFiltersProps> = ({
             </span>
             {searchTerm && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Search: "{searchTerm}"
+                Search: &quot;{searchTerm}&quot;
                 <button
                   onClick={() => onSearchChange("")}
                   className="ml-1 hover:text-blue-900"

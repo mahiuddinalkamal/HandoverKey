@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { vaultApi, VaultEntry } from "../services/vault";
 import VaultEntryCard from "../components/VaultEntryCard";
 import VaultEntryModal from "../components/VaultEntryModal";
@@ -18,9 +18,9 @@ const Vault: React.FC = () => {
 
   useEffect(() => {
     loadEntries();
-  }, [selectedCategory, searchTerm]);
+  }, [loadEntries]);
 
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     try {
       setLoading(true);
       const filters = {
@@ -34,7 +34,7 @@ const Vault: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, searchTerm]);
 
   const handleCreateEntry = () => {
     setEditingEntry(null);
