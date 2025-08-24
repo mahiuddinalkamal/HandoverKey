@@ -7,43 +7,42 @@ HandoverKey follows a **zero-knowledge, end-to-end encrypted architecture** wher
 ## 2. High-Level Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Web Client    │    │  Mobile Client  │    │   CLI Client    │
-│   (React/TS)    │    │  (Planned)      │    │   (Planned)     │
-│   PRODUCTION    │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │   API Gateway   │
-                    │  (Rate Limiting)│
-                    └─────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  Authentication │
-                    │   Service       │
-                    └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  User Service   │    │  Vault Service  │    │ Handover Service│
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │  Event Bus      │
-                    │  (RabbitMQ)     │
-                    └─────────────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────┐
-         │                       │                       │
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  PostgreSQL     │    │     Redis       │    │  Object Storage │
-│  (User Data)    │    │   (Cache/Queue) │    │  (Encrypted)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+    │   Web Client    │    │  Mobile Client  │    │   CLI Client    │
+    │   (React)       │    │  (Planned)      │    │   (Planned)     │
+    └─────────────────┘    └─────────────────┘    └─────────────────┘
+            │                       │                       │
+            └───────────────────────┼───────────────────────┘
+                                    │
+                            ┌─────────────────┐
+                            │   API Gateway   │
+                            │  (Rate Limiting)│
+                            └─────────────────┘
+                                    │
+                            ┌─────────────────┐
+                            │  Authentication │
+                            │   Service       │
+                            └─────────────────┘
+                                    │
+            ┌───────────────────────┼───────────────────────┐
+            │                       │                       │
+    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+    │  User Service   │    │  Vault Service  │    │ Handover Service│
+    └─────────────────┘    └─────────────────┘    └─────────────────┘
+            │                       │                       │
+            └───────────────────────┼───────────────────────┘
+                                    │
+                            ┌─────────────────┐
+                            │  Event Bus      │
+                            │  (RabbitMQ)     │
+                            └─────────────────┘
+                                    │
+            ┌───────────────────────┼───────────────────────┐
+            │                       │                       │
+    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+    │  PostgreSQL     │    │     Redis       │    │  Object Storage │
+    │  (User Data)    │    │   (Cache/Queue) │    │  (Encrypted)    │
+    └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ## 3. Security Architecture
@@ -54,22 +53,22 @@ HandoverKey follows a **zero-knowledge, end-to-end encrypted architecture** wher
 User Device                    Server                    Successor Device
      │                            │                            │
      │ 1. Generate Master Key     │                            │
-     │    (PBKDF2)               │                            │
+     │    (PBKDF2)                │                            │
      │                            │                            │
      │ 2. Encrypt Data            │                            │
-     │    (AES-256-GCM)          │                            │
+     │    (AES-256-GCM)           │                            │
      │                            │                            │
      │ 3. Upload Encrypted Data   │                            │
-     │    (Never Plaintext)      │                            │
+     │    (Never Plaintext)       │                            │
      │                            │                            │
      │                            │ 4. Store Encrypted Data    │
-     │                            │    (Cannot Decrypt)       │
+     │                            │    (Cannot Decrypt)        │
      │                            │                            │
-     │                            │ 5. Trigger Handover       │
-     │                            │    (After Inactivity)     │
+     │                            │ 5. Trigger Handover        │
+     │                            │    (After Inactivity)      │
      │                            │                            │
-     │                            │ 6. Send Encrypted Data    │
-     │                            │    to Successors          │
+     │                            │ 6. Send Encrypted Data     │
+     │                            │    to Successors           │
      │                            │                            │
      │                            │                            │ 7. Decrypt Data
      │                            │                            │    (With Shared Key)
@@ -193,13 +192,6 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Data categorization and tagging system
   - Real-time search and filtering
   - Client-side encryption/decryption
-  - Comprehensive audit logging
-- **Features Implemented**:
-  - Tag management with autocomplete
-  - Category-based organization
-  - Statistics dashboard
-  - Responsive design for all devices
-  - 184 comprehensive tests covering all functionality
 
 #### 4.1.4 Handover Service
 
@@ -210,13 +202,7 @@ const reconstructMasterKey = (shares: string[]): string => {
   - Progressive reminder scheduling (75%, 85%, 95%)
   - Automated handover execution with grace periods
   - Successor notification system
-  - Comprehensive audit logging
-- **Features Implemented**:
-  - Multi-tier notification system
-  - Secure check-in token system
-  - Handover orchestration with grace periods
-  - Activity monitoring service
-  - 187 tests covering all scenarios
+
 
 #### 4.1.5 Notification Service
 
@@ -476,16 +462,16 @@ const rateLimit = rateLimit({
          │                      │                      │
          └──────────────────────┼──────────────────────┘
                                 │
-                    ┌─────────────────┐
-                    │     ELK Stack    │
-                    │   (Logging)      │
-                    └─────────────────┘
+                      ┌─────────────────┐
+                      │     ELK Stack   │
+                      │   (Logging)     │
+                      └─────────────────┘
                                 │
-                    ┌─────────────────┐
-                    │   Jaeger        │
-                    │ (Distributed    │
-                    │  Tracing)       │
-                    └─────────────────┘
+                      ┌─────────────────┐
+                      │   Jaeger        │
+                      │ (Distributed    │
+                      │  Tracing)       │
+                      └─────────────────┘
 ```
 
 ### 8.2 Key Metrics

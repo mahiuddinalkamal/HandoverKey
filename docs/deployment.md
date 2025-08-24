@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-This guide provides instructions for deploying the HandoverKey application. It covers local development setup, staging environment deployment, and considerations for production.
+This guide provides instructions for deploying the HandoverKey project. It covers local development setup, staging environment deployment, and considerations for production.
 
 ## 2. Local Development Setup
 
@@ -68,13 +68,6 @@ This guide provides instructions for deploying the HandoverKey application. It c
 
 7. **Access the web application:**
    Open your browser and navigate to `http://localhost:3000` (or the port configured in `apps/web/vite.config.ts`).
-   
-   The web application includes:
-   - Complete vault management interface
-   - Client-side encryption for all data
-   - Tag management and search functionality
-   - Statistics dashboard
-   - Responsive design for all devices
 
 ### 2.3 Stopping Services
 
