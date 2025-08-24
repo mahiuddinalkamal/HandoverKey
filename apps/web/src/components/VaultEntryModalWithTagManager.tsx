@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { VaultEntry, VaultEntryData, vaultApi } from "../services/vault";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import TagManager from "./TagManager";
+import { encryptData } from "../services/encryption";
 
 interface VaultEntryModalProps {
   entry?: VaultEntry | null;
@@ -21,6 +22,7 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
     category: "passwords",
     tags: [] as string[],
   });
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -51,21 +53,23 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
       return;
     }
 
+    if (!password.trim()) {
+      setError("Password is required for encryption");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      // In a real implementation, you would encrypt the data client-side here
-      // This is a simplified version for demonstration
-      const encryptedData = btoa(formData.data); // Simple base64 encoding for demo
-      const iv = crypto.getRandomValues(new Uint8Array(16));
+      // Use proper AES-256-GCM encryption with PBKDF2 key derivation
+      const encryptionResult = await encryptData(formData.data, password);
 
       const entryData: VaultEntryData = {
-        encryptedData,
-        iv: Array.from(iv)
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join(""),
-        algorithm: "AES-256-GCM",
+        encryptedData: encryptionResult.encryptedData,
+        iv: encryptionResult.iv,
+        salt: encryptionResult.salt,
+        algorithm: encryptionResult.algorithm,
         category: formData.category,
         tags: formData.tags,
       };
@@ -76,9 +80,13 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
         await vaultApi.createEntry(entryData);
       }
 
+      // Clear sensitive data from memory
+      setPassword("");
+      setFormData({ ...formData, data: "" });
+
       onSave();
     } catch (err) {
-      setError("Failed to save entry. Please try again.");
+      setError(err instanceof Error ? err.message : "Failed to save entry. Please try again.");
       console.error("Save error:", err);
     } finally {
       setLoading(false);
@@ -135,6 +143,23 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Encryption Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter password for encryption"
+              required
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              This password will be used to encrypt your data with AES-256-GCM encryption.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Data
             </label>
             <textarea
@@ -148,8 +173,7 @@ const VaultEntryModalWithTagManager: React.FC<VaultEntryModalProps> = ({
               required
             />
             <p className="mt-1 text-xs text-gray-500">
-              Your data will be encrypted client-side before being sent to the
-              server.
+              Your data will be encrypted client-side with AES-256-GCM before being sent to the server.
             </p>
           </div>
 
