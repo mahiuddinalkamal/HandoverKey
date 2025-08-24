@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface VaultFiltersProps {
@@ -21,21 +21,13 @@ const VaultFilters: React.FC<VaultFiltersProps> = ({
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
 
   // Debounced search implementation
-  const debounceSearch = useCallback(
-    (term: string) => {
-      const timeoutId = setTimeout(() => {
-        onSearchChange(term);
-      }, 300); // 300ms debounce delay
-
-      return () => clearTimeout(timeoutId);
-    },
-    [onSearchChange],
-  );
-
   useEffect(() => {
-    const cleanup = debounceSearch(localSearchTerm);
-    return cleanup;
-  }, [localSearchTerm, debounceSearch]);
+    const timeoutId = setTimeout(() => {
+      onSearchChange(localSearchTerm);
+    }, 300); // 300ms debounce delay
+
+    return () => clearTimeout(timeoutId);
+  }, [localSearchTerm, onSearchChange]);
 
   // Sync local state with prop changes
   useEffect(() => {
